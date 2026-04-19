@@ -23,11 +23,19 @@ Aplicación web desarrollada con React + Vite que reproduce una experiencia de l
 
 ## Instrucciones de instalación
 
-1. Clonar el repositorio
-git clone <https://github.com/Arqueholica/cartas_nilo.git>
-2. Instalar dependencias
-npm install
-3. Ejecutar el servidor de desarrollo
+1. Clonar el repositorio:
+  ```bash
+  git clone <https://github.com/Arqueholica/cartas_nilo.git>
+  ```
+3. Instalar dependencias:
+  ```bash
+  npm install
+  ```
+5. Ejecutar el servidor de desarrollo:
+  ```bash
 npm run dev
-4. Abrir el navegador
+  ```
+6. Abrir el navegador:
+```
 http://localhost:5173
+```
