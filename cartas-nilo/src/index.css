@@ -2,6 +2,8 @@
    CARTAS DEL NILO — CARTA VI  v3
    Two-page spread · Pull-tab notes · Reader notepad
    ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
 :root {
   --bg-primary: #c8b998;
   --bg-page: #e8dcc8;
@@ -394,22 +396,25 @@ body::after {
 
 /* ---- PAGES ---- */
 .spread {
-  position: absolute;
-  inset: 0;
+  opacity: 0;
   display: flex;
-  pointer-events: none;
-  opacity: 0
+  transform: scale(0.98);
+  transition: all 0.4s ease;
+  position: absolute;
+  width: 100%;
+  height: 100%;
 }
 
+
 .spread.active {
-  pointer-events: all;
   opacity: 1;
-  z-index: 10
+  transform: scale(1);
+  z-index: 2;
 }
 
 .pg {
   position: relative;
-  width: 50%;
+  width: 100%;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
@@ -556,13 +561,11 @@ body::after {
 }
 
 .flip-layer.flipping {
-  display: block;
-  animation: flipFwd var(--flip-ms) cubic-bezier(.15, .7, .35, 1) forwards
+  animation: flipFwd 0.9s ease;
 }
 
 .flip-layer.flipping-back {
-  display: block;
-  animation: flipBwd var(--flip-ms) cubic-bezier(.15, .7, .35, 1) forwards
+  animation: flipBwd 0.9s ease;
 }
 
 .flip-front,
