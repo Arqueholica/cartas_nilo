@@ -1,4 +1,21 @@
 import Spread from "./spread";
+import InlineNote from "./InlineNote";
+import barco from "../../../public/images/barco-esclavista.jpg";
+import mapa from "../../../public/images/mapa-africa-1850.jpg";
+import nadar_fau from "../../../public/images/nadar-gautier.jpg";
+import retrato_pradier from "../../../public/images/retrato-pradier.jpg";
+import medinet from "../../../public/images/medinet-el-fayum.jpg";
+import ten_san_antonio from "../../../public/images/tentaciones-san-antonio.jpg";
+import quilleboeuf from "../../../public/images/quilleboeuf.jpg";
+import abadia_graville from "../../../public/images/abadia-graville.jpg";
+import monjes from "../../../public/images/monjes-coptos.jpg";
+import esna1 from "../../../public/images/esna-1.jpg";
+import esna2 from "../../../public/images/esna-2.jpg";
+import esna3 from "../../../public/images/esna-3.jpg";
+import gerome_almea from "../../../public/images/gerome-almea.jpg";
+import khawal_ghawazi from "../../../public/images/khawal-ghawazi.jpg";
+import chateau_heron from "../../../public/images/chateau-heron.jpg";
+import hamameh_dendera from "../../../public/images/hamameh-dendera.jpg";
 
 const Book = ({ spread, flipping, flipDirection }) => {
     return (
@@ -56,17 +73,21 @@ const Book = ({ spread, flipping, flipDirection }) => {
                                 ruido de los <span className="ht">tarabuchs</span> de nuestros marineros, que cantan dando palmas. El sol cae a
                                 plomo sobre el toldo de nuestra cubierta. El Nilo está plano como un río de acero. Hay grandes palmeras en
                                 las orillas. El cielo está completamente azul. ¡Ah, mi querido y viejo amigo, mi amigo del alma!</p>
-                            <div className="inl">
-                                <button className="inl-tog"><span className="inl-arr"></span>Mapa de África en 1850</button>
-                                <div className="inl-body">
-                                    <div className="iw">
-                                        {/* <img src="images/mapa-africa-1850.jpg" alt="Mapa de África en 1850" loading="lazy"> */}
-                                        <span className="zi">⤢</span>
-                                    </div>
-                                    <p className="cap">Mapa de África en 1850, editado por el reverendo y astrónomo Thomas Milner a partir de los
-                                        trabajos del cartógrafo August Petermann (1822-1878).</p>
-                                </div>
-                            </div>
+
+                            <InlineNote
+                                title={
+                                    <>
+                                        Mapa de África en 1850
+                                    </>
+                                }
+                                img={mapa}
+                                caption={
+                                    <>
+                                        Mapa de África en 1850, editado por el reverendo y astrónomo Thomas Milner a partir de los
+                                        trabajos del cartógrafo August Petermann (1822-1878).
+                                    </>
+                                }
+                            />
                             <span className="pn">23</span>
                         </div>
                     }
@@ -93,17 +114,19 @@ const Book = ({ spread, flipping, flipDirection }) => {
                                 declinado mucho.</p>
                             <p className="bt">En lo referente al trabajo, leo todos los días la <em>Odisea</em> en griego. Desde que surcamos
                                 el Nilo he devorado cuatro de sus cantos. Como regresaremos por Grecia, espero que me resulte útil.</p>
-                            <div className="inl">
-                                <button className="inl-tog"><span className="inl-arr"></span>Retratos de Théophile Gautier y James Pradier</button>
-                                <div className="inl-body">
-                                    {/* <div className="iw"><img src="images/nadar-gautier.jpg" alt="Nadar: Théophile Gautier" loading="lazy"><span
-                                    className="zi">⤢</span></div> */}
-                                    <p className="cap">Nadar: <em>Théophile Gautier</em> (ca. 1866).</p>
-                                    {/* <div className="iw"><img src="images/retrato-pradier.jpg"
-                                    alt="Jean Baptiste Marie Fouque: James Pradier (1848)" loading="lazy"><span className="zi">⤢</span></div> */}
-                                    <p className="cap">Jean Baptiste Marie Fouque: <em>Retrato de James Pradier</em> (1848).</p>
-                                </div>
-                            </div>
+                            <InlineNote
+                                title={
+                                    <>
+                                        Retratos de Théophile Gautier y James Pradier
+                                    </>
+                                }
+                                img={[nadar_fau, retrato_pradier]}
+                                caption={
+                                    <>
+                                        Nadar: <em>Théophile Gautier</em> (ca. 1866).
+                                    </>
+                                }
+                            />
                             <span className="pn">24</span>
                         </div>
                     }
@@ -125,16 +148,19 @@ const Book = ({ spread, flipping, flipDirection }) => {
                                 poeta que «desnudas como la palma de la mano», pues, por toda vestimenta, solo llevan anillos. He visto
                                 hijas de Nubia con collares de piastras de oro que les llegaban hasta los muslos, y con cinturones de perlas
                                 de colores sobre su vientre negro. ¡Y su danza!... Pero vayamos por orden.</p>
-                            <div className="inl">
-                                <button className="inl-tog"><span className="inl-arr"></span>David Roberts: <em>Barco esclavista</em>
-                                    (1842)</button>
-                                <div className="inl-body">
-                                    {/* <div className="iw"><img src="images/barco-esclavista.jpg" alt="David Roberts: Barco esclavista"
-                                            loading="lazy"><span className="zi">⤢</span></div> */}
-                                    <p className="cap">David Roberts: <em>Barco esclavista. Vista del Nilo con las pirámides de Dahshur y
-                                        Saqqara</em> (1842).</p>
-                                </div>
-                            </div>
+                            <InlineNote
+                                title={
+                                    <>
+                                        David Roberts: <em>Barco esclavista</em> (1842)
+                                    </>
+                                }
+                                img={barco}
+                                caption={
+                                    <>
+                                        David Roberts: <em>Barco esclavista. Vista del Nilo con las pirámides de Dahshur y Saqqara</em> (1842).
+                                    </>
+                                }
+                            />
                             <p className="bt">De El Cairo a Beni Suef, nada digno de mención. Tardamos diez días en recorrer esas 25 leguas,
                                 por culpa del <span className="ht">khamsin</span> o simún que nos retrasó. Nada de lo que se diga sobre él es
                                 exagerado. Es una tempestad de arena que te atrapa. Hay que encerrarse y permanecer sereno. Solo nuestras
@@ -152,16 +178,20 @@ const Book = ({ spread, flipping, flipDirection }) => {
                             <p className="bt">En Medinet El-Fayum<sup className="fn" data-n="10">10</sup> nos alojamos en casa de un cristiano de
                                 Damasco<sup className="fn" data-n="11">11</sup> que nos brindó hospitalidad. En su casa se alojaba, como
                                 comensal habitual, un sacerdote católico.</p>
-                            <div className="inl">
-                                <button className="inl-tog"><span className="inl-arr"></span>Jean-Léon Gérôme: <em>Vista de Medinet El-Fayum</em>
-                                    (1868)</button>
-                                <div className="inl-body">
-                                    {/* <div className="iw"><img src="images/medinet-el-fayum.jpg" alt="Vista de Medinet El-Fayum"
-                                        loading="lazy"><span className="zi">⤢</span></div> */}
-                                    <p className="cap">Jean-Léon Gérôme: <em>Vista de Medinet El-Fayum</em> (1868). Capital de la región del
-                                        Fayum, a 130 km al suroeste de El Cairo.</p>
-                                </div>
-                            </div>
+                            <InlineNote
+                                title={
+                                    <>
+                                        Jean-Léon Gérôme: <em>Vista de Medinet El-Fayum</em> (1868)
+                                    </>
+                                }
+                                img={medinet}
+                                caption={
+                                    <>
+                                        Jean-Léon Gérôme: <em>Vista de Medinet El-Fayum</em> (1868). Capital de la región del
+                                        Fayum, a 130 km al suroeste de El Cairo.
+                                    </>
+                                }
+                            />
                             <p className="bt">So pretexto de que los musulmanes no toman vino, estos buenos cristianos se hinchan de
                                 aguardiente. Es increíble la cantidad de vasitos de aguardiente que se soplan por confraternidad religiosa.
                                 Nuestro anfitrión era un hombre algo letrado, y, como estábamos en el país de san Antonio, hablamos de él,
@@ -169,22 +199,20 @@ const Book = ({ spread, flipping, flipDirection }) => {
                                 qué colgaba de las paredes de la habitación donde dormimos? ¡Un grabado con una vista de Quilleboeuf<sup
                                     className="fn" data-n="13">13</sup>, y otro con una de la abadía de Graville<sup className="fn"
                                         data-n="14">14</sup>!</p>
-                            <div className="inl">
-                                <button className="inl-tog"><span className="inl-arr"></span>San Antonio, Quilleboeuf y la abadía de
-                                    Graville</button>
-                                <div className="inl-body">
-                                    {/* <div className="iw"><img src="images/tentaciones-san-antonio.jpg"
-                                        alt="Pieter Brueghel: Las tentaciones de san Antonio" loading="lazy"><span className="zi">⤢</span></div> */}
-                                    <p className="cap">Pieter Brueghel el Joven: <em>Las tentaciones de san Antonio</em>, la pintura que fascinó a
-                                        Flaubert en Génova en 1845.</p>
-                                    {/* <div className="iw"><img src="images/quilleboeuf.jpg" alt="Quilleboeuf" loading="lazy"><span
-                                    className="zi">⤢</span></div> */}
-                                    <p className="cap">Vista de Quilleboeuf. Población normanda en la orilla del último meandro del Sena.</p>
-                                    {/* <div className="iw"><img src="images/abadia-graville.jpg" alt="Abadía de Graville" loading="lazy"><span
-                                    className="zi">⤢</span></div> */}
-                                    <p className="cap">La abadía de Graville, litografía de 1818.</p>
-                                </div>
-                            </div>
+                            <InlineNote
+                                title={
+                                    <>
+                                        San Antonio, Quilleboeuf y la abadía de Graville
+                                    </>
+                                }
+                                img={[ten_san_antonio, quilleboeuf, abadia_graville]}
+                                caption={
+                                    <>
+                                        Pieter Brueghel el Joven: <em>Las tentaciones de san Antonio</em>, la pintura que fascinó a
+                                        Flaubert en Génova en 1845.
+                                    </>
+                                }
+                            />
                             <span className="pn">27-28</span>
                         </div>
                     }
@@ -203,15 +231,19 @@ const Book = ({ spread, flipping, flipDirection }) => {
                                 viajeros, descender de su montaña, tirarse al agua y venir nadando a pedir limosna. Es un asalto en toda
                                 regla. Ves a esos valientes bajar las afiladas rocas, completamente desnudos, y nadar hacia ti con todas sus
                                 fuerzas gritando a pleno pulmón: <em>«¡Batchis, batchis, cawajda chistiani!»</em></p>
-                            <div className="inl">
-                                <button className="inl-tog"><span className="inl-arr"></span>Monjes coptos (fotografía, 1898-1914)</button>
-                                <div className="inl-body">
-                                    {/* <div className="iw"><img src="images/monjes-coptos.jpg" alt="Monjes coptos" loading="lazy"><span
-                                    className="zi">⤢</span></div> */}
-                                    <p className="cap">Departamento fotográfico de la colonia americana en Jerusalén: <em>Monjes coptos</em>
-                                        (1898-1914).</p>
-                                </div>
-                            </div>
+                            <InlineNote
+                                title={
+                                    <>
+                                        Monjes coptos (fotografía, 1898-1914)
+                                    </>
+                                }
+                                img={monjes}
+                                caption={
+                                    <>
+                                        Departamento fotográfico de la colonia americana en Jerusalén: <em>Monjes coptos</em> (1898-1914).
+                                    </>
+                                }
+                            />
                             <p className="bt">Los buitres y las águilas sobrevuelan tu cabeza, el barco surca el agua con sus dos grandes
                                 velas desplegadas. En aquel momento, uno de nuestros tripulantes bailaba desnudo una danza lasciva. Para
                                 ahuyentar a los monjes cristianos, les enseñaba su trasero, mientras ellos se aferraban al costado de la
@@ -263,18 +295,20 @@ const Book = ({ spread, flipping, flipDirection }) => {
                                 celebérrima cortesana. Cuando llegamos a su casa nos estaba esperando. Su confidente había venido esa mañana
                                 a la <em>canga</em>, escoltada por un carnero domesticado moteado de alheña amarilla, con un bozal de
                                 terciopelo negro, que la seguía como un perro.</p>
-                            <div className="inl">
-                                <button className="inl-tog"><span className="inl-arr"></span>Esna — Fotografías de Maxime Du Camp</button>
-                                <div className="inl-body">
-                                    {/* <div className="igal">
-                                    <img src="images/esna-1.jpg" alt="Esna vista 1" loading="lazy">
-                                    <img src="images/esna-2.jpg" alt="Esna vista 2" loading="lazy">
-                                    <img src="images/esna-3.jpg" alt="Esna vista 3" loading="lazy">
-                                </div> */}
-                                    <p className="cap">Maxime Du Camp: La ciudad de Esna, la antigua Latopolis, a orillas del Nilo. Serie de tres
-                                        fotografías.</p>
-                                </div>
-                            </div>
+                            <InlineNote
+                                title={
+                                    <>
+                                        Esna — Fotografías de Maxime Du Camp
+                                    </>
+                                }
+                                img={[esna1, esna2, esna3]}
+                                caption={
+                                    <>
+                                        Maxime Du Camp: La ciudad de Esna, la antigua Latopolis, a orillas del Nilo. Serie de tres
+                                        fotografías.
+                                    </>
+                                }
+                            />
                             <p className="bt">Ella acababa de salir del baño. Con un gran <span className="ht">tarbuch</span>, cuya borla
                                 deshilachada le caía sobre sus anchos hombros; la parte inferior de su cuerpo, tapada por unos inmensos
                                 pantalones de color rosa; el torso desnudo, cubierto por una gasa violeta, ella se alzaba en lo alto de la
@@ -286,17 +320,20 @@ const Book = ({ spread, flipping, flipDirection }) => {
                                 La suya no vale, ni mucho menos, la del famoso Hassan<sup className="fn" data-n="23">23</sup>, de quien ya te
                                 hablé. Sin embargo, resultó bastante agradable. Exceptúo a una nubia que vimos en Asuán<sup className="fn"
                                     data-n="24">24</sup>. Pero eso ya no es danza árabe, es algo más salvaje.</p>
-                            <div className="inl">
-                                <button className="inl-tog"><span className="inl-arr"></span>Almeas y <em>khawal</em></button>
-                                <div className="inl-body">
-                                    {/* <div className="iw"><img src="images/gerome-almea.jpg" alt="Gérôme: La almea" loading="lazy"><span
-                                        className="zi">⤢</span></div> */}
-                                    <p className="cap">Jean-Léon Gérôme: <em>Muchacha de El Cairo o La almea</em> (1873).</p>
-                                    {/* <div className="iw"><img src="images/khawal-ghawazi.jpg" alt="Khawal con traje de ghawazi"
-                                        loading="lazy"><span className="zi">⤢</span></div> */}
-                                    <p className="cap"><em>Khawal</em> vistiendo el traje de danza de las <em>ghawazi</em> (ca. 1870).</p>
-                                </div>
-                            </div>
+
+                            <InlineNote
+                                title={
+                                    <>
+                                        Almeas y <em>khawal</em>
+                                    </>
+                                }
+                                img={[gerome_almea, khawal_ghawazi]}
+                                caption={
+                                    <>
+                                        Jean-Léon Gérôme: <em>Muchacha de El Cairo o La almea</em> (1873).
+                                    </>
+                                }
+                            />
                             <span className="pn">33</span>
                         </div>
                     }
@@ -342,29 +379,38 @@ const Book = ({ spread, flipping, flipDirection }) => {
                                 barca por el estanque, completamente solo, con mi uniforme de colegial. Los cisnes me miraban pasar y las
                                 hojas de los arbustos caían sobre el agua<sup className="fn" data-n="28">28</sup>. Fue pocos días antes de
                                 volver a las clases; tenía quince años.</p>
-                            <div className="inl">
-                                <button className="inl-tog"><span className="inl-arr"></span>Château de Héron, residencia de los Pomereu</button>
-                                <div className="inl-body">
-                                    {/* <div className="iw"><img src="images/chateau-heron.jpg" alt="Château de Héron" loading="lazy"><span
-                                            className="zi">⤢</span></div> */}
-                                    <p className="cap">El <em>Château de Héron</em>, propiedad de la familia Pomereu.</p>
-                                </div>
-                            </div>
+                            <InlineNote
+                                title={
+                                    <>
+                                        Château de Héron, residencia de los Pomereu
+                                    </>
+                                }
+                                img={chateau_heron}
+                                caption={
+                                    <>
+                                        El <em>Château de Héron</em>, propiedad de la familia Pomereu.
+                                    </>
+                                }
+                            />
                             <p className="bt">En cuanto a la naturaleza, lo mejor que he visto por el momento son los alrededores de Tebas<sup
                                 className="fn" data-n="29">29</sup>. A partir de Quena, Egipto pierde su aspecto agrícola y pacífico. Una
                                 noche, cerca de Dendera<sup className="fn" data-n="30">30</sup>, paseamos bajo los <span className="ht">dums</span>;
                                 las montañas eran del color púrpura, el Nilo azul, el cielo azul ultramarino y la vegetación de un verde
                                 pálido. Todo estaba inmóvil. Parecía un paisaje pintado. Algunos turcos con turbantes fumaban al pie de los
                                 árboles.</p>
-                            <div className="inl">
-                                <button className="inl-tog"><span className="inl-arr"></span>Maxime Du Camp: <em>Vista de Hamameh</em>, cerca de
-                                    Dendera</button>
-                                <div className="inl-body">
-                                    {/* <div className="iw"><img src="images/hamameh-dendera.jpg" alt="Hamameh, cerca de Dendera"
-                                            loading="lazy"><span className="zi">⤢</span></div> */}
-                                    <p className="cap">Maxime Du Camp: <em>Vista de la aldea de Hamameh, cerca de Dendera</em>.</p>
-                                </div>
-                            </div>
+                            <InlineNote
+                                title={
+                                    <>
+                                        Maxime Du Camp: <em>Vista de Hamameh</em>, cerca de Dendera
+                                    </>
+                                }
+                                img={hamameh_dendera}
+                                caption={
+                                    <>
+                                        Maxime Du Camp: <em>Vista de la aldea de Hamameh, cerca de Dendera</em>.
+                                    </>
+                                }
+                            />
                             <span className="pn">35–36</span>
                         </div>
                     }
@@ -399,7 +445,7 @@ const Book = ({ spread, flipping, flipDirection }) => {
                     left={
                         <div className="pg pg-l">
                             <p className="bt dc">En este momento nos hemos detenido por falta de viento. Las moscas me pican el rostro; el
-                                joven<sup class="fn" data-n="32">32</sup> Du Camp ha ido a hacer unas pruebas. Se le da bastante bien; creo
+                                joven<sup className="fn" data-n="32">32</sup> Du Camp ha ido a hacer unas pruebas. Se le da bastante bien; creo
                                 que tendremos un álbum bastante presentable.</p>
                             <p className="bt">Aún no te he recogido piedras del Nilo, de acuerdo con la promesa que te hice, porque el Nilo
                                 tiene pocas piedras. Pero he recogido arena. Aunque resulte difícil, no perdemos la esperanza de exportar
