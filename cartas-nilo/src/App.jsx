@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import './App.css';
 import Header from './components/header';
 import Sidebar from './components/sidebar';
@@ -13,11 +13,39 @@ function App() {
   const [theme, setTheme] = useState("sepia");
   const [tocOpen, setTocOpen] = useState(false);
   const [readerOpen, setReaderOpen] = useState(false);
+  const flipAudio = useRef(null);
 
   const TOTAL = 7;
 
+  // ---- AUDIO ----
+  useEffect(() => {
+    const audio = new Audio("/audio/49053354-page-turn-305789.mp3");
+    audio.preload = "auto";
+    audio.volume = 0.1;
+    flipAudio.current = audio;
+
+    return () => {
+      audio.pause();
+      flipAudio.current = null;
+    };
+  }, []);
+
+  const playFlip = useCallback(() => {
+    const audio = flipAudio.current;
+    if (!audio) return;
+
+    // Clonar el audio para permitir solapamiento si se pasa rápido
+    const clone = audio.cloneNode();
+    clone.volume = audio.volume;
+    clone.play().catch((err) => {
+      // Fallback: intentar reproducir el original
+      audio.currentTime = 0;
+      audio.play().catch(() => { });
+    });
+  }, []);
+
   // ---- NAVIGATION ----
-  const goTo = (idx) => {
+  const goTo = useCallback((idx) => {
     if (flipping) return;
     if (idx < 0 || idx >= TOTAL) return;
     if (idx === spread) return;
@@ -31,10 +59,17 @@ function App() {
       setSpread(idx);
       setFlipping(false);
     }, 900);
-  };
+  }, [spread, flipping]);
 
-  const next = () => goTo(spread + 1);
-  const prev = () => goTo(spread - 1);
+  const next = useCallback(() => {
+    playFlip();
+    goTo(spread + 1);
+  }, [playFlip, goTo, spread]);
+
+  const prev = useCallback(() => {
+    playFlip();
+    goTo(spread - 1);
+  }, [playFlip, goTo, spread]);
 
   // ---- UI ACTIONS ----
   const toggleToc = () => {
@@ -69,7 +104,7 @@ function App() {
 
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [spread, flipping]);
+  }, [next, prev]);  // ← dependencias correctas
 
   // ---- 📱 SWIPE ----
   useEffect(() => {
@@ -99,7 +134,7 @@ function App() {
       el?.removeEventListener("touchstart", handleStart);
       el?.removeEventListener("touchend", handleEnd);
     };
-  }, [spread, flipping]);
+  }, [next, prev]);  // ← dependencias correctas
 
   // ---- THEME ----
   useEffect(() => {
@@ -135,7 +170,9 @@ function App() {
       <Book
         spread={spread}
         flipping={flipping}
-        direction={flipDirection}
+        flipDirection={flipDirection}
+        next={next}
+        prev={prev}
       />
     </>
   );

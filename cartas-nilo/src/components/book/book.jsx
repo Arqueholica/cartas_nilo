@@ -1,25 +1,26 @@
 import Spread from "./spread";
 import InlineNote from "./InlineNote";
-import barco from "../../../public/images/barco-esclavista.jpg";
-import mapa from "../../../public/images/mapa-africa-1850.jpg";
 import nadar_fau from "../../../public/images/nadar-gautier.jpg";
 import retrato_pradier from "../../../public/images/retrato-pradier.jpg";
-import medinet from "../../../public/images/medinet-el-fayum.jpg";
 import ten_san_antonio from "../../../public/images/tentaciones-san-antonio.jpg";
 import quilleboeuf from "../../../public/images/quilleboeuf.jpg";
 import abadia_graville from "../../../public/images/abadia-graville.jpg";
-import monjes from "../../../public/images/monjes-coptos.jpg";
 import esna1 from "../../../public/images/esna-1.jpg";
 import esna2 from "../../../public/images/esna-2.jpg";
 import esna3 from "../../../public/images/esna-3.jpg";
 import gerome_almea from "../../../public/images/gerome-almea.jpg";
 import khawal_ghawazi from "../../../public/images/khawal-ghawazi.jpg";
-import chateau_heron from "../../../public/images/chateau-heron.jpg";
-import hamameh_dendera from "../../../public/images/hamameh-dendera.jpg";
 
-const Book = ({ spread, flipping, flipDirection }) => {
+const Book = ({ spread, flipping, flipDirection, next, prev }) => {
     return (
         <div className="shell" id="shell">
+            <button
+                type="button"
+                className={`nav nav-p ${spread === 0 ? "off" : ""}`}
+                onClick={prev}
+            >
+                ←
+            </button>
             <div className="codex" id="codex">
 
                 {/* SPINE */}
@@ -80,7 +81,7 @@ const Book = ({ spread, flipping, flipDirection }) => {
                                         Mapa de África en 1850
                                     </>
                                 }
-                                img={mapa}
+                                img="../../../public/images/mapa-africa-1850.jpg"
                                 caption={
                                     <>
                                         Mapa de África en 1850, editado por el reverendo y astrónomo Thomas Milner a partir de los
@@ -154,7 +155,7 @@ const Book = ({ spread, flipping, flipDirection }) => {
                                         David Roberts: <em>Barco esclavista</em> (1842)
                                     </>
                                 }
-                                img={barco}
+                                img="../../../public/images/barco-esclavista.jpg"
                                 caption={
                                     <>
                                         David Roberts: <em>Barco esclavista. Vista del Nilo con las pirámides de Dahshur y Saqqara</em> (1842).
@@ -184,7 +185,7 @@ const Book = ({ spread, flipping, flipDirection }) => {
                                         Jean-Léon Gérôme: <em>Vista de Medinet El-Fayum</em> (1868)
                                     </>
                                 }
-                                img={medinet}
+                                img="../../../public/images/medinet-el-fayum.jpg"
                                 caption={
                                     <>
                                         Jean-Léon Gérôme: <em>Vista de Medinet El-Fayum</em> (1868). Capital de la región del
@@ -237,7 +238,7 @@ const Book = ({ spread, flipping, flipDirection }) => {
                                         Monjes coptos (fotografía, 1898-1914)
                                     </>
                                 }
-                                img={monjes}
+                                img="../../../public/images/monjes-coptos.jpg"
                                 caption={
                                     <>
                                         Departamento fotográfico de la colonia americana en Jerusalén: <em>Monjes coptos</em> (1898-1914).
@@ -385,7 +386,7 @@ const Book = ({ spread, flipping, flipDirection }) => {
                                         Château de Héron, residencia de los Pomereu
                                     </>
                                 }
-                                img={chateau_heron}
+                                img="../../../public/images/chateau-heron.jpg"
                                 caption={
                                     <>
                                         El <em>Château de Héron</em>, propiedad de la familia Pomereu.
@@ -404,7 +405,7 @@ const Book = ({ spread, flipping, flipDirection }) => {
                                         Maxime Du Camp: <em>Vista de Hamameh</em>, cerca de Dendera
                                     </>
                                 }
-                                img={hamameh_dendera}
+                                img="../../../public/images/hamameh-dendera.jpg"
                                 caption={
                                     <>
                                         Maxime Du Camp: <em>Vista de la aldea de Hamameh, cerca de Dendera</em>.
@@ -513,6 +514,13 @@ const Book = ({ spread, flipping, flipDirection }) => {
                     }
                 />
             </div>
+            <button
+                type="button"
+                className={`nav nav-n ${spread === 6 ? "off" : ""}`}
+                onClick={next}
+            >
+                →
+            </button>
         </div>
     );
 };

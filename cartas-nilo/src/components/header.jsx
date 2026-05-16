@@ -1,4 +1,5 @@
 import React from "react";
+import AmbientAudio from "./book/AmbientAudio";
 
 const Header = ({
     spread,
@@ -45,7 +46,9 @@ const Header = ({
             </div>
 
             {/* RIGHT */}
+
             <div className="bar-r">
+                <AmbientAudio />
                 <div className="fsz">
                     <button className="btn" onClick={onFontDown}>A−</button>
                     <button className="btn" onClick={onFontUp}>A+</button>

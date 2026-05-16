@@ -1057,12 +1057,12 @@ body::after {
   position: fixed;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 60;
+  z-index: 999;
   background: var(--bg-controls);
   border: 1px solid var(--border);
   color: var(--text-secondary);
-  width: 38px;
-  height: 38px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1070,7 +1070,9 @@ body::after {
   cursor: pointer;
   transition: all .3s;
   box-shadow: 0 2px 8px var(--shadow);
-  backdrop-filter: blur(8px)
+  backdrop-filter: blur(8px);
+
+  pointer-events: auto;
 }
 
 .nav:hover {
@@ -1095,6 +1097,11 @@ body::after {
 
 .nav-n {
   right: 8px
+}
+
+.nav svg,
+.nav span {
+  pointer-events: none;
 }
 
 /* ======== LIGHTBOX ======== */
@@ -1663,4 +1670,16 @@ sup.fn:hover {
   .np-text {
     font-size: .72rem
   }
+}
+
+/* AUDIO UI */
+
+.audio-ui {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.audio-ui input[type="range"] {
+  width: 80px;
 }
