@@ -4,6 +4,7 @@ import Header from './components/header';
 import Sidebar from './components/sidebar';
 import ReaderPanel from './components/readerPanel';
 import Book from './components/book/book';
+import { NotesProvider } from "./components/NotesContext";
 
 function App() {
 
@@ -142,7 +143,7 @@ function App() {
   }, [theme]);
 
   return (
-    <>
+    <NotesProvider>
       <Header
         spread={spread}
         total={TOTAL}
@@ -174,7 +175,7 @@ function App() {
         next={next}
         prev={prev}
       />
-    </>
+    </NotesProvider>
   );
 }
 

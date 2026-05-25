@@ -1,19 +1,20 @@
 import Spread from "./spread";
 import InlineNote from "./InlineNote";
-import nadar_fau from "../../../public/images/nadar-gautier.jpg";
-import retrato_pradier from "../../../public/images/retrato-pradier.jpg";
-import ten_san_antonio from "../../../public/images/tentaciones-san-antonio.jpg";
-import quilleboeuf from "../../../public/images/quilleboeuf.jpg";
-import abadia_graville from "../../../public/images/abadia-graville.jpg";
-import esna1 from "../../../public/images/esna-1.jpg";
-import esna2 from "../../../public/images/esna-2.jpg";
-import esna3 from "../../../public/images/esna-3.jpg";
-import gerome_almea from "../../../public/images/gerome-almea.jpg";
-import khawal_ghawazi from "../../../public/images/khawal-ghawazi.jpg";
+import { useNotes } from "../NotesContext";
+import NotesPanel from "../NotesPanel";
 
 const Book = ({ spread, flipping, flipDirection, next, prev }) => {
+    const { highlightNote } = useNotes();
+
+    const handleSupClick = (e) => {
+        const sup = e.target.closest("sup.fn");
+        if (sup) {
+            highlightNote(parseInt(sup.dataset.n, 10));
+        }
+    };
+
     return (
-        <div className="shell" id="shell">
+        <div className="shell" id="shell" onClick={handleSupClick}>
             <button
                 type="button"
                 className={`nav nav-p ${spread === 0 ? "off" : ""}`}
@@ -25,6 +26,9 @@ const Book = ({ spread, flipping, flipDirection, next, prev }) => {
 
                 {/* SPINE */}
                 <div className="spine" />
+
+                {/* NOTES PANEL */}
+                <NotesPanel spread={spread} />
 
                 {/* SPREADS */}
                 <Spread
@@ -81,7 +85,7 @@ const Book = ({ spread, flipping, flipDirection, next, prev }) => {
                                         Mapa de África en 1850
                                     </>
                                 }
-                                img="../../../public/images/mapa-africa-1850.jpg"
+                                img="/images/mapa-africa-1850.jpg"
                                 caption={
                                     <>
                                         Mapa de África en 1850, editado por el reverendo y astrónomo Thomas Milner a partir de los
@@ -121,7 +125,7 @@ const Book = ({ spread, flipping, flipDirection, next, prev }) => {
                                         Retratos de Théophile Gautier y James Pradier
                                     </>
                                 }
-                                img={[nadar_fau, retrato_pradier]}
+                                img={["/images/nadar-gautier.jpg", "/images/retrato-pradier.jpg"]}
                                 caption={
                                     <>
                                         Nadar: <em>Théophile Gautier</em> (ca. 1866).
@@ -155,7 +159,7 @@ const Book = ({ spread, flipping, flipDirection, next, prev }) => {
                                         David Roberts: <em>Barco esclavista</em> (1842)
                                     </>
                                 }
-                                img="../../../public/images/barco-esclavista.jpg"
+                                img="/images/barco-esclavista.jpg"
                                 caption={
                                     <>
                                         David Roberts: <em>Barco esclavista. Vista del Nilo con las pirámides de Dahshur y Saqqara</em> (1842).
@@ -185,7 +189,7 @@ const Book = ({ spread, flipping, flipDirection, next, prev }) => {
                                         Jean-Léon Gérôme: <em>Vista de Medinet El-Fayum</em> (1868)
                                     </>
                                 }
-                                img="../../../public/images/medinet-el-fayum.jpg"
+                                img="/images/medinet-el-fayum.jpg"
                                 caption={
                                     <>
                                         Jean-Léon Gérôme: <em>Vista de Medinet El-Fayum</em> (1868). Capital de la región del
@@ -206,7 +210,7 @@ const Book = ({ spread, flipping, flipDirection, next, prev }) => {
                                         San Antonio, Quilleboeuf y la abadía de Graville
                                     </>
                                 }
-                                img={[ten_san_antonio, quilleboeuf, abadia_graville]}
+                                img={["/images/tentaciones-san-antonio.jpg", "/images/quilleboeuf.jpg", "/images/abadia-graville.jpg"]}
                                 caption={
                                     <>
                                         Pieter Brueghel el Joven: <em>Las tentaciones de san Antonio</em>, la pintura que fascinó a
@@ -238,7 +242,7 @@ const Book = ({ spread, flipping, flipDirection, next, prev }) => {
                                         Monjes coptos (fotografía, 1898-1914)
                                     </>
                                 }
-                                img="../../../public/images/monjes-coptos.jpg"
+                                img="/images/monjes-coptos.jpg"
                                 caption={
                                     <>
                                         Departamento fotográfico de la colonia americana en Jerusalén: <em>Monjes coptos</em> (1898-1914).
@@ -302,7 +306,7 @@ const Book = ({ spread, flipping, flipDirection, next, prev }) => {
                                         Esna — Fotografías de Maxime Du Camp
                                     </>
                                 }
-                                img={[esna1, esna2, esna3]}
+                                img={["/images/esna-1.jpg", "/images/esna-2.jpg", "/images/esna-3.jpg"]}
                                 caption={
                                     <>
                                         Maxime Du Camp: La ciudad de Esna, la antigua Latopolis, a orillas del Nilo. Serie de tres
@@ -328,7 +332,7 @@ const Book = ({ spread, flipping, flipDirection, next, prev }) => {
                                         Almeas y <em>khawal</em>
                                     </>
                                 }
-                                img={[gerome_almea, khawal_ghawazi]}
+                                img={["/images/gerome-almea.jpg", "/images/khawal-ghawazi.jpg"]}
                                 caption={
                                     <>
                                         Jean-Léon Gérôme: <em>Muchacha de El Cairo o La almea</em> (1873).
@@ -386,7 +390,7 @@ const Book = ({ spread, flipping, flipDirection, next, prev }) => {
                                         Château de Héron, residencia de los Pomereu
                                     </>
                                 }
-                                img="../../../public/images/chateau-heron.jpg"
+                                img="/images/chateau-heron.jpg"
                                 caption={
                                     <>
                                         El <em>Château de Héron</em>, propiedad de la familia Pomereu.
@@ -405,7 +409,7 @@ const Book = ({ spread, flipping, flipDirection, next, prev }) => {
                                         Maxime Du Camp: <em>Vista de Hamameh</em>, cerca de Dendera
                                     </>
                                 }
-                                img="../../../public/images/hamameh-dendera.jpg"
+                                img="/images/hamameh-dendera.jpg"
                                 caption={
                                     <>
                                         Maxime Du Camp: <em>Vista de la aldea de Hamameh, cerca de Dendera</em>.

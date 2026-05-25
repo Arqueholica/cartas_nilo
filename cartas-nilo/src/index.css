@@ -693,7 +693,7 @@ body::after {
   top: 0;
   right: 0;
   bottom: 0;
-  width: 50%;
+  width: 35%;
   z-index: 31;
   pointer-events: none;
   overflow: hidden;
@@ -1416,6 +1416,18 @@ sup.fn:hover {
 .igal img:hover {
   transform: scale(1.04);
   z-index: 1
+}
+
+.igal-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 4px 0;
+}
+
+.igal-stack img {
+  width: 100%;
+  display: block;
 }
 
 /* Cover */
