@@ -16,6 +16,19 @@ function App() {
   const [readerOpen, setReaderOpen] = useState(false);
   const flipAudio = useRef(null);
 
+  const [notes, setNotes] = useState(() => {
+    try {
+      const raw = localStorage.getItem("cartaVI_reader_notes");
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem("cartaVI_reader_notes", JSON.stringify(notes));
+  }, [notes]);
+
   const TOTAL = 7;
 
   // ---- AUDIO ----
@@ -160,12 +173,15 @@ function App() {
         goTo={goTo}
         tocOpen={tocOpen}
         toggleToc={toggleToc}
+        notes={notes}
       />
 
       <ReaderPanel
         spread={spread}
         open={readerOpen}
         onClose={() => setReaderOpen(false)}
+        notes={notes}
+        setNotes={setNotes}
       />
 
       <Book
@@ -174,6 +190,7 @@ function App() {
         flipDirection={flipDirection}
         next={next}
         prev={prev}
+        readerOpen={readerOpen}
       />
     </NotesProvider>
   );

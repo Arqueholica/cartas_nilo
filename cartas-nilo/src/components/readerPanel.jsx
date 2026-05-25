@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
-
-const STORAGE_KEY = "cartaVI_reader_notes";
+import { useEffect, useRef } from "react";
 
 const toRoman = (n) => {
     const vals = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
@@ -15,28 +13,28 @@ const toRoman = (n) => {
     return s;
 };
 
-const ReaderPanel = ({ spread, open, onClose }) => {
-    const [notes, setNotes] = useState({});
-
-    // ---- LOAD ----
-    useEffect(() => {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) setNotes(JSON.parse(raw));
-    }, []);
-
-    // ---- SAVE ----
-    useEffect(() => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
-    }, [notes]);
-
+const ReaderPanel = ({ spread, open, onClose, notes = {}, setNotes }) => {
     const key = "s" + spread;
     const currentNotes = notes[key] || [];
+    const prevLength = useRef(currentNotes.length);
+
+    // Auto-focus last textarea when a note is added
+    useEffect(() => {
+        if (currentNotes.length > prevLength.current) {
+            setTimeout(() => {
+                const tas = document.querySelectorAll(".rn-ta");
+                if (tas.length) {
+                    tas[tas.length - 1].focus();
+                }
+            }, 50);
+        }
+        prevLength.current = currentNotes.length;
+    }, [currentNotes.length]);
 
     const addNote = () => {
         const now = new Date();
-        const ts =
-            now.toLocaleDateString("es-ES") + " " +
-            now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+        const ts = now.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) +
+                   ' ' + now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
         const updated = {
             ...notes,

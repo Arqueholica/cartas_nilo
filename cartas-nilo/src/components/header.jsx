@@ -57,16 +57,19 @@ const Header = ({
                 <div className="dots">
                     <div
                         className={`dot ${theme === "sepia" ? "on" : ""}`}
+                        data-t="sepia"
                         onClick={() => onThemeChange("sepia")}
                         title="Sepia"
                     />
                     <div
                         className={`dot ${theme === "light" ? "on" : ""}`}
+                        data-t="light"
                         onClick={() => onThemeChange("light")}
                         title="Claro"
                     />
                     <div
                         className={`dot ${theme === "dark" ? "on" : ""}`}
+                        data-t="dark"
                         onClick={() => onThemeChange("dark")}
                         title="Oscuro"
                     />

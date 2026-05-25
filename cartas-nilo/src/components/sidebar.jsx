@@ -1,4 +1,4 @@
-const Sidebar = ({ spread, goTo, tocOpen, toggleToc }) => {
+const Sidebar = ({ spread, goTo, tocOpen, toggleToc, notes }) => {
 
     const items = [
         { title: "Portada", sp: 0, page: "i" },
@@ -39,7 +39,9 @@ const Sidebar = ({ spread, goTo, tocOpen, toggleToc }) => {
                             }}
                         >
                             {item.title}
-                            <span className="toc-pencil"></span>
+                            <span className="toc-pencil">
+                                {notes["s" + item.sp]?.length ? "✏️" : ""}
+                            </span>
                             <span className="toc-pg">{item.page}</span>
                         </li>
                     ))}

@@ -3,7 +3,7 @@ import InlineNote from "./InlineNote";
 import { useNotes } from "../NotesContext";
 import NotesPanel from "../NotesPanel";
 
-const Book = ({ spread, flipping, flipDirection, next, prev }) => {
+const Book = ({ spread, flipping, flipDirection, next, prev, readerOpen }) => {
     const { highlightNote } = useNotes();
 
     const handleSupClick = (e) => {
@@ -14,7 +14,7 @@ const Book = ({ spread, flipping, flipDirection, next, prev }) => {
     };
 
     return (
-        <div className="shell" id="shell" onClick={handleSupClick}>
+        <div className={`shell ${readerOpen ? "rp-open" : ""}`} id="shell" onClick={handleSupClick}>
             <button
                 type="button"
                 className={`nav nav-p ${spread === 0 ? "off" : ""}`}
@@ -521,6 +521,7 @@ const Book = ({ spread, flipping, flipDirection, next, prev }) => {
             <button
                 type="button"
                 className={`nav nav-n ${spread === 6 ? "off" : ""}`}
+                style={readerOpen ? { right: "calc(var(--reader-w) + 8px)" } : {}}
                 onClick={next}
             >
                 →
