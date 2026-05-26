@@ -13,19 +13,28 @@ export function NotesProvider({ children }) {
         openRef.current = open;
     }, [open]);
 
-    // Clear highlighted when closed
-    useEffect(() => {
-        if (!open) {
-            setHighlighted(null);
-            clearTimeout(hlTimer.current);
-        }
-    }, [open]);
+    // Intercept setOpen to safely reset highlighted note and clear timers when closing the panel,
+    // avoiding cascading renders inside useEffect hooks.
+    const safeSetOpen = useCallback((val) => {
+        setOpen((prev) => {
+            const nextVal = typeof val === "function" ? val(prev) : val;
+            if (!nextVal) {
+                setHighlighted(null);
+                if (hlTimer.current) {
+                    clearTimeout(hlTimer.current);
+                }
+            }
+            return nextVal;
+        });
+    }, []);
 
     const highlightNote = useCallback((num) => {
         const wasOpen = openRef.current;
         setOpen(true);
         setHighlighted(null); // reset para que el efecto dispare aunque sea el mismo número
-        clearTimeout(hlTimer.current);
+        if (hlTimer.current) {
+            clearTimeout(hlTimer.current);
+        }
         
         // Delay matching ver1.0 (50ms if open, 420ms if closed)
         const delay = wasOpen ? 50 : 420;
@@ -37,12 +46,13 @@ export function NotesProvider({ children }) {
     }, []);
 
     return (
-        <NotesContext.Provider value={{ open, setOpen, highlighted, setHighlighted, highlightNote }}>
+        <NotesContext.Provider value={{ open, setOpen: safeSetOpen, highlighted, setHighlighted, highlightNote }}>
             {children}
         </NotesContext.Provider>
     );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useNotes() {
     return useContext(NotesContext);
 }
