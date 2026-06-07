@@ -133,7 +133,8 @@ const Book = ({ spread, flipping, flipDirection, next, prev, readerOpen }) => {
                                         <InlineNote
                                             key={idx}
                                             title={block.title}
-                                            img={block.img}
+                                            layout={block.layout}
+                                            images={block.images}
                                             caption={block.caption}
                                         />
                                     );

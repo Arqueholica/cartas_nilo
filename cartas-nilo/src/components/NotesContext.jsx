@@ -45,8 +45,27 @@ export function NotesProvider({ children }) {
         }, delay);
     }, []);
 
+    const [lightbox, setLightbox] = useState({ open: false, src: "", caption: "" });
+
+    const openLightbox = useCallback((src, caption) => {
+        setLightbox({ open: true, src, caption });
+    }, []);
+
+    const closeLightbox = useCallback(() => {
+        setLightbox((prev) => ({ ...prev, open: false }));
+    }, []);
+
     return (
-        <NotesContext.Provider value={{ open, setOpen: safeSetOpen, highlighted, setHighlighted, highlightNote }}>
+        <NotesContext.Provider value={{ 
+            open, 
+            setOpen: safeSetOpen, 
+            highlighted, 
+            setHighlighted, 
+            highlightNote,
+            lightbox,
+            openLightbox,
+            closeLightbox
+        }}>
             {children}
         </NotesContext.Provider>
     );

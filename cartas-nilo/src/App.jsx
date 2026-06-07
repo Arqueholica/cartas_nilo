@@ -6,6 +6,8 @@ import ReaderPanel from './components/readerPanel';
 import Book from './components/book/book';
 import { NotesProvider } from "./components/NotesContext";
 
+import Lightbox from './components/book/Lightbox';
+
 // Hooks personalizados
 import { useAudio } from "./hooks/useAudio";
 import { useKeyboard } from "./hooks/useKeyboard";
@@ -131,6 +133,8 @@ function App() {
         prev={prev}
         readerOpen={readerOpen}
       />
+
+      <Lightbox />
     </NotesProvider>
   );
 }

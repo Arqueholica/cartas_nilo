@@ -40,8 +40,14 @@ export const letterContent = [
                 {
                     type: "inlineNote",
                     title: "Mapa de África en 1850",
-                    img: "/images/mapa-africa-1850.jpg",
-                    caption: "Mapa de África en 1850, editado por el reverendo y astrónomo Thomas Milner a partir de los trabajos del cartógrafo August Petermann (1822-1878)."
+                    layout: "single",
+                    images: [
+                        {
+                            src: "/images/mapa-africa-1850.jpg",
+                            alt: "Mapa de África en 1850",
+                            caption: "Mapa de África en 1850, editado por el reverendo y astrónomo Thomas Milner a partir de los trabajos del cartógrafo August Petermann (1822-1878)."
+                        }
+                    ]
                 }
             ]
         },
@@ -69,8 +75,19 @@ export const letterContent = [
                 {
                     type: "inlineNote",
                     title: "Retratos de Théophile Gautier y James Pradier",
-                    img: ["/images/nadar-gautier.jpg", "/images/retrato-pradier.jpg"],
-                    caption: "Nadar: <em>Théophile Gautier</em> (ca. 1866)."
+                    layout: "individual",
+                    images: [
+                        {
+                            src: "/images/nadar-gautier.jpg",
+                            alt: "Nadar: Théophile Gautier",
+                            caption: "Nadar: <em>Théophile Gautier</em> (ca. 1866)."
+                        },
+                        {
+                            src: "/images/retrato-pradier.jpg",
+                            alt: "Jean Baptiste Marie Fouque: James Pradier (1848)",
+                            caption: "Jean Baptiste Marie Fouque: <em>Retrato de James Pradier</em> (1848)."
+                        }
+                    ]
                 }
             ]
         }
@@ -89,8 +106,14 @@ export const letterContent = [
                 {
                     type: "inlineNote",
                     title: "David Roberts: <em>Barco esclavista</em> (1842)",
-                    img: "/images/barco-esclavista.jpg",
-                    caption: "David Roberts: <em>Barco esclavista. Vista del Nilo con las pirámides de Dahshur y Saqqara</em> (1842)."
+                    layout: "single",
+                    images: [
+                        {
+                            src: "/images/barco-esclavista.jpg",
+                            alt: "David Roberts: Barco esclavista",
+                            caption: "David Roberts: <em>Barco esclavista. Vista del Nilo con las pirámides de Dahshur y Saqqara</em> (1842)."
+                        }
+                    ]
                 },
                 {
                     type: "paragraph",
@@ -113,8 +136,14 @@ export const letterContent = [
                 {
                     type: "inlineNote",
                     title: "Jean-Léon Gérôme: <em>Vista de Medinet El-Fayum</em> (1868)",
-                    img: "/images/medinet-el-fayum.jpg",
-                    caption: "Jean-Léon Gérôme: <em>Vista de Medinet El-Fayum</em> (1868). Capital de la región del Fayum, a 130 km al suroeste de El Cairo."
+                    layout: "single",
+                    images: [
+                        {
+                            src: "/images/medinet-el-fayum.jpg",
+                            alt: "Vista de Medinet El-Fayum",
+                            caption: "Jean-Léon Gérôme: <em>Vista de Medinet El-Fayum</em> (1868). Capital de la región del Fayum, a 130 km al suroeste de El Cairo."
+                        }
+                    ]
                 },
                 {
                     type: "paragraph",
@@ -123,8 +152,24 @@ export const letterContent = [
                 {
                     type: "inlineNote",
                     title: "San Antonio, Quilleboeuf y la abadía de Graville",
-                    img: ["/images/tentaciones-san-antonio.jpg", "/images/quilleboeuf.jpg", "/images/abadia-graville.jpg"],
-                    caption: "Pieter Brueghel el Joven: <em>Las tentaciones de san Antonio</em>, la pintura que fascinó a Flaubert en Génova en 1845."
+                    layout: "individual",
+                    images: [
+                        {
+                            src: "/images/tentaciones-san-antonio.jpg",
+                            alt: "Pieter Brueghel: Las tentaciones de san Antonio",
+                            caption: "Pieter Brueghel el Joven: <em>Las tentaciones de san Antonio</em>, la pintura que fascinó a Flaubert en Génova en 1845."
+                        },
+                        {
+                            src: "/images/quilleboeuf.jpg",
+                            alt: "Quilleboeuf",
+                            caption: "Vista de Quilleboeuf. Población normanda en la orilla del último meandro del Sena."
+                        },
+                        {
+                            src: "/images/abadia-graville.jpg",
+                            alt: "Abadía de Graville",
+                            caption: "La abadía de Graville, litografía de 1818."
+                        }
+                    ]
                 }
             ]
         }
@@ -143,8 +188,14 @@ export const letterContent = [
                 {
                     type: "inlineNote",
                     title: "Monjes coptos (fotografía, 1898-1914)",
-                    img: "/images/monjes-coptos.jpg",
-                    caption: "Departamento fotográfico de la colonia americana en Jerusalén: <em>Monjes coptos</em> (1898-1914)."
+                    layout: "single",
+                    images: [
+                        {
+                            src: "/images/monjes-coptos.jpg",
+                            alt: "Monjes coptos",
+                            caption: "Departamento fotográfico de la colonia americana en Jerusalén: <em>Monjes coptos</em> (1898-1914)."
+                        }
+                    ]
                 },
                 {
                     type: "paragraph",
@@ -189,7 +240,12 @@ export const letterContent = [
                 {
                     type: "inlineNote",
                     title: "Esna — Fotografías de Maxime Du Camp",
-                    img: ["/images/esna-1.jpg", "/images/esna-2.jpg", "/images/esna-3.jpg"],
+                    layout: "gallery",
+                    images: [
+                        { src: "/images/esna-1.jpg", alt: "Esna vista 1" },
+                        { src: "/images/esna-2.jpg", alt: "Esna vista 2" },
+                        { src: "/images/esna-3.jpg", alt: "Esna vista 3" }
+                    ],
                     caption: "Maxime Du Camp: La ciudad de Esna, la antigua Latopolis, a orillas del Nilo. Serie de tres fotografías."
                 },
                 {
@@ -203,8 +259,19 @@ export const letterContent = [
                 {
                     type: "inlineNote",
                     title: `Almeas y <em>khawal</em>`,
-                    img: ["/images/gerome-almea.jpg", "/images/khawal-ghawazi.jpg"],
-                    caption: `Jean-Léon Gérôme: <em>Muchacha de El Cairo o La almea</em> (1873).`
+                    layout: "individual",
+                    images: [
+                        {
+                            src: "/images/gerome-almea.jpg",
+                            alt: "Gérôme: La almea",
+                            caption: `Jean-Léon Gérôme: <em>Muchacha de El Cairo o La almea</em> (1873).`
+                        },
+                        {
+                            src: "/images/khawal-ghawazi.jpg",
+                            alt: "Khawal con traje de ghawazi",
+                            caption: `<em>Khawal</em> vistiendo el traje de danza de las <em>ghawazi</em> (ca. 1870).`
+                        }
+                    ]
                 }
             ]
         },
@@ -222,7 +289,7 @@ export const letterContent = [
                 },
                 {
                     type: "paragraph",
-                    text: `Su cuerpo estaba cubierto de sudor: estaba cansada después de bailar, tenía frío. La tapé con mi pelliza de piel y se quedó dormida. En cuanto a mí, apenas pegué ojo. Pasé la noche entre infinitas intensidades de ensueño. Contemplando a aquella hermosa criatura dormida, que roncaba con la cabeza apoyada sobre su brazo, pensaba en las noches de placer en París, en un montón de viejos recuerdos… y en ella, en su danza, en su voz que entonaba canciones sin significado ni palabras reconocibles para mí.`
+                    text: `Su body estaba cubierto de sudor: estaba cansada después de bailar, tenía frío. La tapé con mi pelliza de piel y se quedó dormida. En cuanto a mí, apenas pegué ojo. Pasé la noche entre infinitas intensidades de ensueño. Contemplando a aquella hermosa criatura dormida, que roncaba con la cabeza apoyada sobre su brazo, pensaba en las noches de placer en París, en un montón de viejos recuerdos… y en ella, en su danza, en su voz que entonaba canciones sin significado ni palabras reconocibles para mí.`
                 }
             ]
         }
@@ -245,8 +312,14 @@ export const letterContent = [
                 {
                     type: "inlineNote",
                     title: "Château de Héron, residencia de los Pomereu",
-                    img: "/images/chateau-heron.jpg",
-                    caption: "El <em>Château de Héron</em>, propiedad de la familia Pomereu."
+                    layout: "single",
+                    images: [
+                        {
+                            src: "/images/chateau-heron.jpg",
+                            alt: "Château de Héron",
+                            caption: "El <em>Château de Héron</em>, propiedad de la familia Pomereu."
+                        }
+                    ]
                 },
                 {
                     type: "paragraph",
@@ -255,8 +328,14 @@ export const letterContent = [
                 {
                     type: "inlineNote",
                     title: "Maxime Du Camp: <em>Vista de Hamameh</em>, cerca de Dendera",
-                    img: "/images/hamameh-dendera.jpg",
-                    caption: "Maxime Du Camp: <em>Vista de la aldea de Hamameh, cerca de Dendera</em>."
+                    layout: "single",
+                    images: [
+                        {
+                            src: "/images/hamameh-dendera.jpg",
+                            alt: "Hamameh, cerca de Dendera",
+                            caption: "Maxime Du Camp: <em>Vista de la aldea de Hamameh, cerca de Dendera</em>."
+                        }
+                    ]
                 }
             ]
         },
