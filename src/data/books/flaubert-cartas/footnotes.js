@@ -1,0 +1,60 @@
+/**
+ * NOTAS AL MARGEN — Carta VI
+ *
+ * Formato agnóstico: estos mismos datos alimentan
+ *   · el panel de notas de la web React
+ *   · el aside epub:type="footnote" en la exportación EPUB
+ *   · el bloque de notas al pie en la exportación print/PDF
+ *
+ * Convención de marcado en el texto:
+ *   [fn:N]   → referencia a la nota número N
+ *   [ht:X]   → término destacado (italica + color acento)
+ *   [em:X]   → cursiva simple (títulos, palabras extranjeras)
+ */
+export const footnotes = {
+  1:  'El Trópico de Cáncer, que se encuentra a 23°26\'14" de latitud al norte de la línea del Ecuador, es una línea paralela a éste que une los puntos del hemisferio norte donde los rayos del Sol caen verticalmente durante el solsticio del verano. La ciudad de Asuán está situada a 24°05\'20" de latitud norte.',
+  2:  'En 1850, en Francia se utilizaba habitualmente la escala de Réaumur para la medición de la temperatura. Un grado Réaumur equivale a 1,25 grados Celsius. Así que Flaubert habla de una temperatura ambiente de 37,5 ºC.',
+  3:  'El escritor Théophile Gautier (1811-1872) apadrinó literariamente al aspirante Flaubert durante su primera estancia en París en 1840.',
+  4:  'El escultor Jean-Jacques Pradier (1790-1852), más conocido como James Pradier, y su esposa Louise entablaron amistad con el novelista en 1842.',
+  5:  'Verso del Canto III del poema [em:Mélaenis], que Bouilhet publicaría en 1851.',
+  6:  'Región, ciudad y sultanato de Sennar, en Nubia, actual Sudán, a orillas del Nilo Azul.',
+  7:  'La esclavitud se abolió oficialmente en Egipto en 1877, más de un cuarto de siglo después de la visita de Du Camp y Flaubert.',
+  8:  'Flaubert brindaba a Bouilhet el trato de señor en su correspondencia.',
+  9:  'Lago que desde el siglo XIX a. C., en el Imperio Medio egipcio, se extiende en la actual región de El Fayum. El viajante Heródoto (484-425 a. C.) lo visitó y le dio su nombre actual.',
+  10: 'Capital de la región del Fayum, situada a 130 km al suroeste de El Cairo, y en la que se encuentra el lago Moeris.',
+  11: 'Probablemente se refiere a un feligrés de la Iglesia Católica Maronita, fundada por san Marón (siglos IV-V) y que sobrevivió, refugiada en los montes del Líbano y Siria, a la expansión islámica.',
+  12: 'El eremita san Antonio (251-356), el heresiarca Arrio (250-336) y san Atanasio (296-373) tienen en común que ejercieron su labor pastoral en tierras de Egipto. La figura de san Antonio tuvo gran influencia en Flaubert desde 1845, cuando contempló [em:Las tentaciones de san Antonio], atribuida a Pieter Brueghel el Joven.',
+  13: 'Población normanda situada en la orilla izquierda del último meandro del Sena antes de desembocar en su estuario, en El Havre.',
+  14: 'La abadía de Graville, en El Havre, en Normandía, fundada en el siglo XIII, guarda las reliquias de santa Honorina, mártir (siglos III-IV).',
+  15: 'En el Alto Egipto, en la gobernación de Mina, en la orilla oriental del Nilo, se divisa el Djebel El-Teir («la montaña de los pájaros»), en cuyas alturas se levanta un monasterio copto dedicado a la Virgen María.',
+  16: 'Cristianos de Egipto y Etiopía, seguidores de las doctrinas monofisitas sobre la naturaleza de Cristo. La Iglesia copta surgió en el siglo V durante uno de los primeros cismas entre cristianos.',
+  17: 'Flaubert confunde el nombre de la localidad con el del [em:santon]. Según Du Camp, el lugar es El-Shaikh Ebada, donde se encuentran las ruinas de la antigua Antinoópolis.',
+  18: 'Pierre-Jean de Béranger (1780-1857) fue un poeta francés, autor de canciones populares. Flaubert lo consideraba un ejemplo de mediocridad literaria.',
+  19: 'Algo más de 120 cm.',
+  20: 'Serie de tres fotografías de Esna, la antigua Latopolis, tomadas por Du Camp en el viaje de vuelta a El Cairo.',
+  21: 'El nombre de la cortesana significaba en turco «pequeña princesa» y «dama danzarina». Du Camp lo tradujo por «pequeña rosa». Antes de ser desterrada a Esna, fue amante de Abbas Pachá (1813-1854), nieto de Mehmet Alí.',
+  22: 'Pinturas del francés Jean-Léon Gérôme (1824-1904), que retrató a varias almeas durante su viaje a Egipto en 1857, ilustran la indumentaria de Ruichuk-Hanem.',
+  23: 'Alusión a una carta anterior en la que describe el baile de un [em:khawal] llamado Hassan El Bilbeis. Los [em:khawal] eran hombres travestidos que imitaban las danzas de las [em:ghawazi], bailarinas ambulantes de origen gitano.',
+  24: 'Se trata de Azizeh, descrita como «alta, delgada, negra o más bien verde, cabellos encrespados negros; sus ojos de estaño ruedan, de perfil es encantadora».',
+  25: 'Nombre que recibieron los dominios de la actual Etiopía desde el siglo XIII hasta el final de la Segunda Guerra Mundial.',
+  26: 'Probablemente Michel-Marie de Pomereu (1779-1863). El marquesado de Pomereu se remonta a 1717.',
+  27: 'Municipio de Normandía, residencia de los Pomereu.',
+  28: 'Este episodio dejó una profunda huella en el Flaubert adolescente, y su influencia se puede rastrear en el episodio de Vaubyessard, en [em:Madame Bovary].',
+  29: 'En sus notas de viaje, Flaubert registra que pasaron por Tebas el 4 de marzo. En el viaje de regreso permanecerán dos semanas en la región, visitando Karnak, Luxor, el Valle de los Reyes y Medinet Habu.',
+  30: 'El 2 de abril la canga atracó en Hamameh, en la vertiente oriental del Nilo, frente a Dendera, en la orilla opuesta.',
+  31: 'El símil de la guedeja de lana negra arrojada a la corriente de un molino no es una expresión usual en francés. Tal vez provenga de la observación directa de las fábricas textiles de Ruan.',
+  32: 'Aunque Du Camp nació el 8 de febrero de 1822, dos meses después que él, al llamarlo «joven» Flaubert deja traslucir las tensiones que surgieron entre los dos amigos.',
+  33: 'Con «pipa curada», Flaubert se refiere al procedimiento de quemar tabaco en la cazoleta de una pipa nueva para formar una capa de carbono que mejora la calidad del humo.',
+  34: 'Canción de los pordioseros, compuesta por Béranger en 1812 y publicada en 1816 en su antología de [em:Chansons morales et autres].',
+};
+
+/** Qué notas al margen aparecen en cada spread [left, right] */
+export const spreadNotes = [
+  [[], []],                              // 0: portada
+  [[], [1,2,3,4,5]],                     // 1: carta apertura
+  [[6,7,8,9], [10,11,12,13,14]],         // 2: khamsin - fayum
+  [[15,16,17,18], [19]],                 // 3: djebel - quena
+  [[20,21,22,23,24], [25]],              // 4: esna - noche
+  [[26,27,28,29,30], [31]],              // 5: tebas - cataratas
+  [[32,33,34], []],                      // 6: despedida
+];
