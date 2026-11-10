@@ -2,10 +2,17 @@
  * Page — una página del libro
  *
  * Estructura fija, igual en todas las páginas:
- *   .pg      → la hoja
- *     .pg-box → la caja de texto (medidas constantes; el contenido nunca
- *               la desborda porque el Paginator reparte por lo que cabe)
- *     .pn     → el folio, siempre a la misma altura
+ *   .pg                 → la hoja
+ *     .pg-band--head    → cabecera: franja reservada, con tres ranuras
+ *     .pg-box           → la caja de texto (medidas constantes; el
+ *                         contenido nunca la desborda porque el
+ *                         Paginator reparte por lo que cabe)
+ *     .pg-band--foot    → pie: la misma franja, con el folio
+ *
+ * Las dos franjas tienen la misma altura y existen siempre, aunque
+ * estén vacías: así el texto empieza y acaba a la misma altura en todo
+ * el libro. Lo que se imprime en cada ranura se declara como dato, en
+ * el `chrome.js` del libro.
  *
  * Solo las ilustraciones con su nota integrada pueden sobresalir de la
  * caja, mediante la clase .bleed que aplica el propio bloque.
@@ -36,6 +43,22 @@ function EndPage({ author, series, label }) {
   );
 }
 
+/**
+ * Band — cabecera o pie.
+ * El espacio se reserva siempre; la línea de filete solo aparece
+ * cuando hay texto que separar del cuerpo.
+ */
+function Band({ kind, band }) {
+  const data = band || { left: null, center: null, right: null, empty: true };
+  return (
+    <div className={`pg-band pg-band--${kind}${data.empty ? ' is-empty' : ''}`}>
+      <span className="pg-slot pg-slot--l">{data.left}</span>
+      <span className="pg-slot pg-slot--c">{data.center}</span>
+      <span className="pg-slot pg-slot--r">{data.right}</span>
+    </div>
+  );
+}
+
 export default function Page({ side, data, onNoteClick, onLightbox, onStart,
                                onTermClick, glossaryTerms, activeTerm, onReturn }) {
   const sideClass = side === 'left' ? 'pg-l' : side === 'single' ? 'pg-s' : 'pg-r';
@@ -45,6 +68,7 @@ export default function Page({ side, data, onNoteClick, onLightbox, onStart,
   if (data.type === 'halftitle')
     return <div className={`pg ${sideClass}`}><HalfTitle {...data} /></div>;
 
+  // La portada no se pagina nunca, pero mide igual que cualquier página
   if (data.type === 'cover' || data.type === 'cover-page')
     return (
       <div className={`pg ${sideClass} pg-cover`}>
@@ -55,11 +79,13 @@ export default function Page({ side, data, onNoteClick, onLightbox, onStart,
   if (data.type === 'end-page')
     return <div className={`pg ${sideClass}`}><EndPage {...data} /></div>;
 
-  const folio = data.folio;
-  const tone  = data.tone === 'note' ? ' pg--note' : '';
+  const tone   = data.tone === 'note' ? ' pg--note' : '';
+  const chrome = data.chrome || {};
 
   return (
     <div className={`pg ${sideClass}${tone}`}>
+      <Band kind="head" band={chrome.head} />
+
       <div className="pg-box">
         {(data.blocks || []).map((block, i) => (
           <BlockRenderer
@@ -74,7 +100,8 @@ export default function Page({ side, data, onNoteClick, onLightbox, onStart,
           />
         ))}
       </div>
-      {folio && <span className="pn">{folio}</span>}
+
+      <Band kind="foot" band={chrome.foot} />
     </div>
   );
 }

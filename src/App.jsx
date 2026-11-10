@@ -27,6 +27,8 @@ import Paginator  from './components/book/Paginator';
 
 import { normalizeTerm } from './components/book/blocks/parseText';
 import { paginateGlossary, paginateGallery } from './components/book/paginate';
+import { pageChrome } from './components/book/pageChrome';
+import { chrome }     from './data/books/flaubert-cartas/chrome';
 
 const BOOK_SLUG = 'flaubert-cartas';
 const FOCUS_MS  = 5000;   // cuánto dura el enfoque de una nota
@@ -37,21 +39,17 @@ export default function App() {
   const [fontStep, setFont] = useState(0);
   const [pages, setPages]   = useState(null);
 
+  // Solo se mide el libro abierto. De ahí saca el paginador la caja de
+  // texto, montando una página patrón: así no hay que repetir en el
+  // código los márgenes y las franjas que ya están en el CSS, ni
+  // depender de que haya una página a la vista (en la portada no hay).
   useEffect(() => {
     const measure = () => {
-      const el = document.querySelector('.pg-box');
-      if (el) {
-        const r = el.getBoundingClientRect();
-        setBox((b) => (Math.abs(b.w - r.width) > 1 || Math.abs(b.h - r.height) > 1
-          ? { w: r.width, h: r.height } : b));
-      } else {
-        // antes del primer render: estimar a partir del contenedor
-        const codex = document.querySelector('.codex');
-        if (codex) {
-          const r = codex.getBoundingClientRect();
-          setBox({ w: r.width / 2 - 60, h: r.height - 90 });
-        }
-      }
+      const codex = document.querySelector('.codex');
+      if (!codex) return;
+      const r = codex.getBoundingClientRect();
+      setBox((b) => (Math.abs(b.w - r.width) > 1 || Math.abs(b.h - r.height) > 1
+        ? { w: r.width, h: r.height } : b));
     };
     measure();
     window.addEventListener('resize', measure);
@@ -76,22 +74,44 @@ export default function App() {
     const starts = {};
 
     if (pages) {
-      // numeración correlativa propia (independiente del PDF impreso)
-      pages.forEach((pg, k) => { pg.folio = String(k + 1); });
+      // Numeración propia, independiente de la del PDF impreso.
+      // La portada es la página 1 pero NUNCA se pagina, así que las
+      // cartas empiezan en la 2. El paginador completa cada carta a un
+      // número par de páginas, de modo que la paridad se conserva:
+      // pares a la izquierda (verso), impares a la derecha (recto).
+      pages.forEach((pg, k) => {
+        pg.folio = pg.blank ? null : String(k + 2);
+      });
 
       // agrupar las páginas calculadas en dobles páginas, por carta
       let i = 0;
       while (i < pages.length) {
         const li = pages[i].letterIndex;
-        if (starts[letters[li].id] === undefined) starts[letters[li].id] = all.length;
+        const L  = letters[li];
+        if (starts[L.id] === undefined) starts[L.id] = all.length;
+
         const left  = pages[i];
         const right = (pages[i + 1] && pages[i + 1].letterIndex === li)
           ? pages[i + 1] : null;
+
+        // Cabecera y pie resueltos contra los datos de cada página
+        const ctx = {
+          bookTitle:    bookMeta.title,
+          bookAuthor:   bookMeta.author,
+          bookImprint:  bookMeta.imprint,
+          chapterLabel: `Carta ${L.number}`,
+          chapterTitle: L.title,       // en estas cartas, el destinatario
+          chapterTo:    L.title,
+          chapterDate:  L.date,
+        };
+        left.chrome = pageChrome(chrome, 'left', { ...ctx, folio: left.folio });
+        if (right) right.chrome = pageChrome(chrome, 'right', { ...ctx, folio: right.folio });
+
         all.push({
           kind: 'letter',
-          carta: letters[li].number,
-          cartaId: letters[li].id,
-          footnotes: letters[li].footnotes,
+          carta: L.number,
+          cartaId: L.id,
+          footnotes: L.footnotes,
           left,
           right: right || { blocks: [] },
           spreadNotes: [...notesIn(left.blocks), ...notesIn(right?.blocks)],
@@ -259,9 +279,9 @@ export default function App() {
       {/* Medición oculta que reparte el texto en páginas */}
       <Paginator
         letters={letters}
-        boxWidth={box.w}
-        boxHeight={box.h}
-        signal={`${box.w}x${box.h}`}
+        codexWidth={box.w}
+        codexHeight={box.h}
+        signal={`${box.w}x${box.h}x${fontStep}`}
         onPages={setPages}
       />
     </>

@@ -1,6 +1,8 @@
 /* CARTAS DEL NILO v4.1 */
 :root{
   --notes-w:270px;--nav-w:220px;--bar-h:42px;
+  /* Franjas de cabecera y pie: misma altura arriba y abajo */
+  --band-gap:16px;--band-rule-gap:9px;--band-h:20px;--band-space:46px;
   --bg-primary:#c8b998;--bg-page:#ede4d0;--bg-page-left:#e8ddc8;
   --bg-page-alt:#dfd4bc;--bg-nota-int:#e0d5be;--bg-nota-full:#e8dcc8;
   --bg-nav:rgba(200,186,162,.98);--bg-notes:#f0e8d8;
@@ -92,7 +94,9 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .spine::before{content:'';position:absolute;left:50%;top:4%;bottom:4%;width:1px;background:var(--border);opacity:.45}
 .spread{position:absolute;inset:0;display:flex;pointer-events:none;opacity:0}
 .spread.active{pointer-events:all;opacity:1;z-index:10}
-.pg{position:relative;width:50%;height:100%;overflow:hidden;padding:26px 30px 46px;transition:background .5s;display:flex;flex-direction:column}
+/* La hoja. El relleno superior e inferior reserva las dos franjas
+   —cabecera y pie— que tienen la misma altura en todo el libro. */
+.pg{position:relative;width:50%;height:100%;overflow:hidden;padding:var(--band-space) 30px var(--band-space);transition:background .5s;display:flex;flex-direction:column}
 .pg::-webkit-scrollbar{width:4px}.pg::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 .pg-l{background:var(--bg-page-left);border-radius:8px 0 0 8px;box-shadow:inset -6px 0 16px -6px var(--spine-shadow),-3px 2px 10px var(--shadow)}
 .pg-r{background:var(--bg-page);border-radius:0 8px 8px 0;box-shadow:inset 6px 0 16px -6px var(--spine-shadow),3px 2px 10px var(--shadow)}
@@ -162,14 +166,54 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .hdr .loc{font-family:var(--font-body);font-style:italic;font-size:.76rem;color:var(--text-muted);margin-top:2px}
 .bt{font-family:var(--font-body);font-size:1rem;line-height:var(--line-height);color:var(--text-primary);text-align:justify;hyphens:auto;margin-bottom:.82em}
 .bt:last-of-type{margin-bottom:0}
-.dc::first-letter{float:left;font-family:var(--font-display);font-size:3.3em;line-height:.78;font-weight:600;color:var(--accent);margin:.04em .08em -.04em 0;padding-top:.04em}
+/* Capitular. `initial-letter: 3 3` la hace de tres líneas de alto y la
+   hunde tres líneas: el navegador alinea su altura de mayúscula con la
+   de la primera línea y su base con la base de la tercera. Así se lee
+   como la primera letra de la primera frase, no como un adorno suelto. */
+.dc::first-letter{
+  font-family:var(--font-display);font-weight:600;color:var(--accent);
+  -webkit-initial-letter:3 3;initial-letter:3 3;
+  margin-right:.09em}
+
+/* Navegadores sin `initial-letter`: capitular flotante, ajustada a mano
+   para que el trazo superior coincida con la primera línea. */
+@supports not (initial-letter: 3) {
+  .dc::first-letter{
+    float:left;font-size:3.06em;line-height:.82;
+    margin:0 .09em 0 0;padding-top:.055em}
+}
+
+/* Un párrafo repartido entre páginas: el trozo que continúa no abre
+   párrafo —sin sangría ni margen superior— y el que sigue en la página
+   siguiente justifica también su última línea, porque no es el final. */
+.bt--cont{margin-top:0;text-indent:0}
+.bt--runs-on{margin-bottom:0;text-align-last:justify}
 .ht{color:var(--accent);font-weight:600;font-style:italic}
 .verse{font-family:var(--font-body);font-style:italic;font-size:.93rem;color:var(--text-secondary);margin:.8em 0;padding:.6em 1em;border-left:3px solid var(--accent);background:var(--bg-page-alt);border-radius:0 4px 4px 0}
 .verse .tr{display:block;font-size:.82rem;color:var(--text-muted);margin-top:.25em}
 sup.fn{font-family:var(--font-ui);font-size:.58em;color:var(--accent);cursor:pointer;font-weight:700;vertical-align:super;padding:0 2px;transition:color .2s}
 sup.fn:hover{color:var(--accent-light)}
 .divider{text-align:center;margin:1.1em 0;color:var(--accent);font-size:.95rem;letter-spacing:8px;opacity:.55}
-.pn{position:absolute;left:30px;right:30px;bottom:16px;text-align:center;font-family:var(--font-ui);font-size:.66rem;color:var(--text-muted);padding-top:9px;border-top:1px solid var(--border)}
+/* ── Cabecera y pie ────────────────────────────────────────────────
+   Dos franjas idénticas, una arriba y otra abajo, con tres ranuras
+   cada una. El espacio se reserva siempre: si la franja está vacía no
+   se dibuja el filete, pero el hueco sigue ahí, de modo que el texto
+   empieza y acaba a la misma altura en todas las páginas.
+   Lo que se imprime en cada ranura se declara en el chrome.js del
+   libro; aquí solo se le da forma. */
+.pg-band{position:absolute;left:30px;right:30px;height:var(--band-h);
+  display:flex;align-items:baseline;gap:10px;
+  font-family:var(--font-ui);font-size:.66rem;color:var(--text-muted);
+  pointer-events:none;user-select:none}
+.pg-band--head{top:var(--band-gap);padding-bottom:var(--band-rule-gap);
+  border-bottom:1px solid var(--border);align-items:flex-start}
+.pg-band--foot{bottom:var(--band-gap);padding-top:var(--band-rule-gap);
+  border-top:1px solid var(--border)}
+.pg-band.is-empty{border-color:transparent}
+.pg-slot{flex:1 1 0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pg-slot--l{text-align:left}
+.pg-slot--c{text-align:center}
+.pg-slot--r{text-align:right}
 .cover{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:100%;padding:28px 18px}
 .cover .orn{color:var(--accent);font-size:1.4rem;letter-spacing:8px;margin-bottom:14px;opacity:.5}
 .cover .bk{font-family:var(--font-display);font-size:.76rem;text-transform:uppercase;letter-spacing:4px;color:var(--text-muted);margin-bottom:18px}
@@ -384,7 +428,17 @@ sup.fn:hover{color:var(--accent-light)}
 
 /* La caja de texto: medidas constantes, el contenido nunca la desborda
    porque el Paginator reparte por lo que cabe. */
-.pg-box{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;position:relative;scrollbar-width:thin;scrollbar-color:var(--border) transparent;scroll-behavior:smooth}
+/* `scrollbar-gutter:stable` reserva el carril de la barra siempre, haya
+   barra o no. Sin eso, la caja real es unos píxeles más estrecha que la
+   de medición justo cuando aparece la barra, el texto rompe líneas de
+   otra manera y la página desborda un poco más: un círculo vicioso. */
+.pg-box{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;position:relative;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:var(--border) transparent;scroll-behavior:smooth}
+/* El último bloque de una página no arrastra su margen inferior: es
+   espacio vacío que no se ve pero cuenta para el desbordamiento, y
+   sacaría una barra de desplazamiento en una página que en realidad
+   cabe de sobra. */
+.pg-box > *:last-child{margin-bottom:0}
+
 .pg-box::-webkit-scrollbar{width:4px}
 .pg-box::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 .pg-box::-webkit-scrollbar-track{background:transparent}
@@ -397,7 +451,20 @@ sup.fn:hover{color:var(--accent-light)}
 /* Caja de medición: fuera de pantalla, mismas medidas que la real */
 .pg-measure-host{position:absolute;left:-10000px;top:0;width:0;height:0;
   overflow:hidden;pointer-events:none;visibility:hidden}
-.pg-measure{height:auto!important;overflow:visible!important}
+/* Página patrón. Recibe por estilo en línea el tamaño del libro abierto
+   y reproduce la estructura de una doble página, de modo que su `.pg-box`
+   mide exactamente lo que medirá la caja de cualquier página real. */
+.pg-ruler{position:relative;display:flex}
+
+/* Caja de medición. Recibe por estilo en línea el ancho de CONTENIDO de
+   la caja real, así que aquí se le quita el carril de la barra para que
+   ese ancho sea el del texto, y se libera la altura. `display:flow-root`
+   le devuelve el contexto de formato que la caja real tiene por su
+   desbordamiento, de modo que los márgenes se colapsan igual en los dos
+   sitios: si no, la cuenta de lo que cabe no cuadra. */
+.pg-measure{height:auto!important;max-height:none!important;
+  overflow:visible!important;scrollbar-gutter:auto!important;
+  display:flow-root}
 
 /* ── Página única: portada y contraportada ── */
 .codex--single{justify-content:center}
@@ -477,9 +544,12 @@ sup.fn:hover{color:var(--accent-light)}
   text-transform:uppercase;letter-spacing:1.4px;color:var(--accent);
   border:1px solid var(--note-rule);border-radius:3px;padding:2px 8px;
   margin-bottom:14px;flex-shrink:0}
-.fnp-fig{margin:0 0 12px;flex-shrink:0}
-.fnp-fig img{width:100%;display:block;border-radius:3px;cursor:zoom-in;
-  border:1px solid var(--note-rule)}
+/* La ilustración cede altura antes que empujar el texto fuera de la
+   página: una imagen vertical, a ancho completo, se saldría de la caja. */
+.fnp-fig{margin:0 0 12px;flex:0 1 auto;min-height:0}
+.fnp-fig img{width:100%;height:auto;max-height:min(40vh,320px);
+  object-fit:contain;object-position:center;display:block;border-radius:3px;
+  cursor:zoom-in;border:1px solid var(--note-rule)}
 .fnp-cap{font-family:var(--font-ui);font-size:.63rem;line-height:1.45;
   color:var(--text-muted);margin-top:5px}
 .fnp-title{font-family:var(--font-display);font-size:1.45rem;font-weight:600;

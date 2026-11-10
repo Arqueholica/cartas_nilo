@@ -242,23 +242,84 @@ redacción que el PDF impuso sobre el DOCX, para revisión editorial.
 La página tiene una estructura fija e idéntica en todo el libro:
 
 ```
-.pg          la hoja
-  .pg-box    la caja de texto — medidas constantes
-  .pn        el folio — siempre a la misma altura
+.pg                    la hoja
+  .pg-band--head       cabecera — franja reservada, tres ranuras
+  .pg-box              la caja de texto — medidas constantes
+  .pg-band--foot       pie — la misma franja, con el folio
 ```
 
-**El texto nunca desborda la caja.** `Paginator.jsx` mide la altura real
-de cada bloque en una caja oculta con las mismas medidas y tipografía
-que la página, y reparte el contenido por lo que cabe. Se recalcula al
-cambiar el cuerpo de letra o el tamaño de la ventana.
+Las dos franjas miden lo mismo y existen siempre, aunque estén vacías:
+así el texto empieza y acaba a la misma altura en todas las páginas. El
+filete solo se dibuja cuando la franja lleva texto.
 
-**La única excepción** son las ilustraciones con su nota integrada, que
-pueden sobresalir del ancho de la caja. Además, al desplegar una nota
-integrada la caja permite desplazarse para verla entera: en lectura
-normal no aparece barra alguna, porque el texto siempre cabe.
+**El texto nunca desborda la caja.** `Paginator.jsx` monta una página
+patrón, lee de ella el ancho y el alto útiles, mide cada bloque en una
+caja oculta con esas mismas medidas y reparte el contenido por lo que
+cabe. Se recalcula al cambiar el cuerpo de letra o el tamaño de la
+ventana.
+
+**El texto tiene continuidad.** Un párrafo que no cabe entero no se baja
+a la página siguiente: se parte por la última línea que cabe y sigue
+arriba de la siguiente, de modo que cada página queda llena hasta el
+borde de la caja. El corte deja siempre un mínimo de dos líneas a cada
+lado —ni huérfanas ni viudas— y nunca cae dentro de una llamada de nota
+ni de un término de glosario. El trozo que continúa no lleva capitular
+y el que sigue en la página siguiente justifica también su última línea,
+para que la unión no se note.
+
+Las páginas que acaban antes de tiempo son solo las que tienen motivo:
+el final de una carta y la que precede a una nota completa.
+
+**La única excepción** al límite de la caja son las ilustraciones con su
+nota integrada, que pueden sobresalir del ancho. Además, al desplegar
+una nota integrada la caja permite desplazarse para verla entera: en
+lectura normal no aparece barra alguna, porque el texto siempre cabe.
+
+### Cabecera y pie
+
+Qué se imprime en cada franja se declara como dato, en
+`data/books/<libro>/chrome.js`. Cada franja tiene tres ranuras —`left`,
+`center`, `right`— y se declara por separado para el **verso** (página
+izquierda, folio par) y el **recto** (derecha, folio impar), como en la
+tipografía clásica.
+
+```js
+export const chrome = {
+  head: {
+    verso: { left: null, center: null, right: null },
+    recto: { left: null, center: null, right: null },
+  },
+  foot: {
+    verso: { left: null, center: 'folio', right: null },
+    recto: { left: null, center: 'folio', right: null },
+  },
+};
+```
+
+Una ranura admite `null` (vacía, pero el espacio se reserva), un token,
+o cualquier otro texto, que se imprime tal cual. Tokens disponibles:
+
+`book.title` · `book.author` · `book.imprint` · `chapter.label` ·
+`chapter.title` · `chapter.to` · `chapter.date` · `section` · `folio`
+
+La cabecera está **de momento vacía**, a la espera de decidir qué va en
+ella. Activarla es cambiar un `null`; no hay que tocar ningún
+componente. La disposición clásica sería el título del libro en el verso
+y el de la carta en el recto.
+
+### Numeración
 
 La edición en línea tiene **su propia numeración**, correlativa e
 independiente de la del PDF impreso.
+
+La **portada es la página 1 pero nunca se pagina**, así que las cartas
+empiezan en la 2. Los folios pares caen siempre en la página izquierda y
+los impares en la derecha: para que la paridad se conserve, cada carta
+se completa a un número par de páginas con una página en blanco, que
+cuenta pero no se pagina, como en el impreso.
+
+Solo las cartas llevan folio. El glosario y la galería se identifican
+con su propia etiqueta.
 
 ### Páginas únicas
 
@@ -306,7 +367,23 @@ nota y la resalta mientras difumina las demás durante cinco segundos.
 - **Las notas se conservan todas.** El impreso recortó unas 60 por
   espacio; en digital se mantienen y las no impresas se marcan
   `inPrint: false`.
-- **La paginación se calcula por lo que cabe**, no por la del PDF. El
-  folio conserva la referencia a la página impresa.
+- **La paginación se calcula por lo que cabe**, no por la del PDF, y la
+  numeración es propia: la del PDF no se arrastra.
+- **El texto manda sobre el bloque.** Antes que dejar un hueco al pie,
+  el párrafo se parte, siempre con dos líneas como mínimo a cada lado.
 - **Glosario y galería van al final**, subdivididos por carta, con una
   etiqueta que indica la procedencia de cada entrada.
+
+---
+
+## 9. Pendiente
+
+- **Glosario y galería se reparten por cantidad**, no por medición:
+  seis entradas por página y dos imágenes, fijas. Cuando una entrada es
+  larga, la página se desborda y saca barra de desplazamiento. Lo
+  correcto es pasarlos por el mismo `Paginator` que las cartas, con una
+  entrada por bloque.
+- **Carta VII** está extraída solo del PDF, a la espera de su DOCX: sus
+  notas están incompletas (3 de las 5 que cita el texto).
+- Un pie de foto del original trae un paréntesis sin cerrar
+  —«Alexandre Bida (1823-1895.»—; se ha respetado tal cual.

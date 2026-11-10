@@ -17,13 +17,13 @@ import { parseText } from './parseText';
  *   ],
  * }
  */
-export default function FullNotePage({ title, blocks = [], onLightbox }) {
+export default function FullNotePage({ title, blocks = [], cont, runsOn, onLightbox }) {
   const images = blocks.filter((b) => b.type === 'note-image');
   const paras  = blocks.filter((b) => b.type === 'note-paragraph');
 
   return (
-    <article className="fnp">
-      <span className="fnp-tag">Nota</span>
+    <article className={`fnp${cont ? ' fnp--cont' : ''}`}>
+      <span className="fnp-tag">{cont ? 'Nota · continúa' : 'Nota'}</span>
 
       {images.map((img, i) => (
         <figure className="fnp-fig" key={i}>
