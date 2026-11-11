@@ -1,11 +1,15 @@
 /**
  * Header — barra superior.
  * Sin estado propio: recibe los callbacks y los invoca.
+ *
+ * `onReturn` solo llega en la galería y el glosario, cuando se ha
+ * entrado desde la lectura: muestra el botón para volver a ella desde
+ * cualquier página de esas secciones, no solo desde la primera.
  */
 export default function Header({ spread, total, theme, label,
                                  onMenuOpen, onFontUp, onFontDown,
                                  onThemeChange, onFullscreen,
-                                 onBookmark, bookmarked }) {
+                                 onBookmark, bookmarked, onReturn }) {
   const center = label ? `${label} · ${spread + 1}/${total}`
                        : `${spread + 1} / ${total}`;
 
@@ -27,6 +31,15 @@ export default function Header({ spread, total, theme, label,
             <path d="M17 3H7a2 2 0 00-2 2v16l7-3 7 3V5a2 2 0 00-2-2z" />
           </svg>
         </button>
+        {onReturn && (
+          <>
+            <div className="sep" />
+            <button className="btn bar-return" onClick={onReturn}
+                    title="Volver a la página que estabas leyendo">
+              ← Volver a la lectura
+            </button>
+          </>
+        )}
       </div>
 
       <div className="bar-c">{center}</div>

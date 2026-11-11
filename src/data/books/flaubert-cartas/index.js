@@ -14,6 +14,12 @@
 import { meta } from './meta';
 import { glossary } from './glossary';
 import { album } from './album';
+import imageSizes from './imageSizes';
+import { registerImageSizes } from '../../../components/book/imageSizes';
+
+// Medidas reales de las imágenes, para que el paginador conozca su
+// alto sin tener que descargarlas (ver scripts/image_sizes.py)
+registerImageSizes(imageSizes);
 
 import { meta01, footnotes01, spreads01 } from './spreads/carta-01';
 import { meta02, footnotes02, spreads02 } from './spreads/carta-02';
@@ -95,12 +101,41 @@ export const backCoverPage = {
   label:  `${meta.imprint} · ${meta.year}`,
 };
 
-/* ─────────── Galería y glosario, aplanados con su carta ─────────── */
+/* ─────────── Galería y glosario ───────────
+ * Se exponen como secciones de bloques, igual que las cartas: una
+ * apertura y después una imagen o una entrada por bloque. Así el
+ * paginador las reparte midiendo lo que cabe y ninguna página se
+ * desborda, sea cual sea el largo de cada entrada.
+ *
+ * Van en el orden en que vienen (agrupadas por carta) y cada entrada
+ * lleva su procedencia en `origin`.
+ */
 export const galleryItems = album.sections.flatMap((s) =>
-  s.items.map((i) => ({ ...i, ref: s.carta })));
+  s.items.map((i) => ({ ...i, origin: s.carta })));
 
 export const glossaryFlat = glossary.sections.flatMap((s) =>
-  s.entries.map((e) => ({ ...e, ref: s.carta })));
+  s.entries.map((e) => ({ ...e, origin: s.carta })));
+
+export const backMatter = [
+  {
+    kind:  'gallery',
+    id:    'galeria',
+    label: album.title || 'Galería de imágenes',
+    blocks: [
+      { type: 'section-head', kind: 'gallery', title: album.title || 'Galería de imágenes' },
+      ...galleryItems.map((item) => ({ type: 'gallery-item', ...item })),
+    ],
+  },
+  {
+    kind:  'glossary',
+    id:    'glosario',
+    label: glossary.title || 'Glosario',
+    blocks: [
+      { type: 'section-head', kind: 'glossary', title: glossary.title || 'Glosario' },
+      ...glossaryFlat.map((entry) => ({ type: 'glossary-entry', ...entry })),
+    ],
+  },
+];
 
 export const bookMeta = meta;
 export const cartas   = letters.map(({ id, number, title, date }) =>

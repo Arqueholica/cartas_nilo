@@ -170,9 +170,32 @@ La **portada** es siempre la primera página y admite composición libre:
 También acepta cualquier bloque multimedia, de modo que una portada puede
 llevar animación o sonido.
 
-El **glosario** y la **galería** se paginan solos como páginas de libro.
-No se declaran en las cartas: se construyen en `index.js` a partir de
-`glossary.js` y `album.js`, y se colocan al final del libro.
+El **glosario** y la **galería** no se declaran en las cartas: se
+construyen en `index.js` a partir de `glossary.js` y `album.js` y se
+colocan al final del libro, en la lista `backMatter`. Cada una es una
+sección de bloques, como una carta: una apertura y después una entrada
+o una imagen por bloque.
+
+| `type` | Campos | Uso |
+|---|---|---|
+| `section-head` | `kind`, `title` | Apertura de la sección: su título. |
+| `glossary-entry` | `term`, `definition`, `origin?` | Una entrada del glosario. |
+| `gallery-item` | `image`, `caption?`, `text?`, `origin?` | Una imagen de la galería con su pie y su texto. |
+
+`origin` es la procedencia («Carta V»). No se llama `ref` porque esa
+palabra está reservada en React.
+
+Al ser un bloque por entrada, el paginador las reparte midiendo lo que
+cabe, igual que el texto de las cartas. Las entradas y las imágenes no
+se parten: si la siguiente no cabe, pasa entera a la página siguiente.
+En la galería, el hueco que eso deja se reparte arriba y abajo de la
+página, como en un libro de láminas, en vez de quedarse todo al pie.
+
+Pulsar un término del texto lleva a la página del glosario donde está
+**su** entrada —no a la primera del glosario— y la resalta unos
+segundos. Desde cualquier página de la galería o del glosario, la barra
+superior ofrece **Volver a la lectura**, que devuelve a la página de
+la que se salió.
 
 ---
 
@@ -234,6 +257,23 @@ y no dependa de adivinar.
 
 **Salida de control:** `REVISION_TEXTO.md` lista todas las variantes de
 redacción que el PDF impuso sobre el DOCX, para revisión editorial.
+
+### Medidas de las imágenes: `scripts/image_sizes.py`
+
+El paginador mide las páginas en una caja oculta, donde las imágenes no
+llegan a descargarse. Para que aun así sepa cuánto ocupan, este script
+lee el ancho y el alto de cada imagen de `public/images/` y los escribe
+en `src/data/books/<libro>/imageSizes.js`. Los componentes pasan esas
+medidas a la etiqueta `<img>` y el navegador reserva el hueco exacto
+antes de que la imagen llegue (de paso, la página no salta al cargar).
+
+```bash
+python3 scripts/image_sizes.py
+```
+
+**Hay que ejecutarlo cada vez que se añada o se cambie una imagen.** Si
+una imagen no tiene medida, el lector funciona igual, pero la página que
+la contiene puede desbordarse.
 
 ---
 
@@ -318,8 +358,9 @@ los impares en la derecha: para que la paridad se conserve, cada carta
 se completa a un número par de páginas con una página en blanco, que
 cuenta pero no se pagina, como en el impreso.
 
-Solo las cartas llevan folio. El glosario y la galería se identifican
-con su propia etiqueta.
+Solo las cartas llevan folio. El glosario y la galería llevan en el pie
+su propia etiqueta («Galería de imágenes · 3/24»), declarada en
+`chrome.js` dentro de `backMatter`.
 
 ### Páginas únicas
 
@@ -371,18 +412,21 @@ nota y la resalta mientras difumina las demás durante cinco segundos.
   numeración es propia: la del PDF no se arrastra.
 - **El texto manda sobre el bloque.** Antes que dejar un hueco al pie,
   el párrafo se parte, siempre con dos líneas como mínimo a cada lado.
-- **Glosario y galería van al final**, subdivididos por carta, con una
-  etiqueta que indica la procedencia de cada entrada.
+- **Glosario y galería van al final**, en el orden de las cartas, con
+  una etiqueta que indica la procedencia de cada entrada. Se paginan
+  midiendo, como todo el libro, y no llevan folio: en su pie va el
+  nombre de la sección y la página dentro de ella («Glosario · 2/7»),
+  declarado en `chrome.js` (`backMatter`).
 
 ---
 
 ## 9. Pendiente
 
-- **Glosario y galería se reparten por cantidad**, no por medición:
-  seis entradas por página y dos imágenes, fijas. Cuando una entrada es
-  larga, la página se desborda y saca barra de desplazamiento. Lo
-  correcto es pasarlos por el mismo `Paginator` que las cartas, con una
-  entrada por bloque.
+- **Las entradas del glosario no se parten entre páginas.** Una entrada
+  larga que no cabe al pie pasa entera a la siguiente y deja un hueco de
+  unas pocas líneas. Es la práctica habitual en glosarios cortos; si se
+  prefiere llenar la caja, se puede partir la definición con el mismo
+  mecanismo que los párrafos.
 - **Carta VII** está extraída solo del PDF, a la espera de su DOCX: sus
   notas están incompletas (3 de las 5 que cita el texto).
 - Un pie de foto del original trae un paréntesis sin cerrar

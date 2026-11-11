@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { parseText } from './parseText';
 import BlockRenderer from './BlockRenderer';
+import { imgDims } from '../imageSizes';
 
 /**
  * Cover — portada del libro (siempre la primera página, individual)
@@ -96,7 +97,7 @@ export default function Cover({
           if (block.type === 'cover-image')
             return (
               <div className="cover-img" key={i}>
-                <img src={block.src} alt={block.caption || ''} />
+                <img src={block.src} {...imgDims(block.src)} alt={block.caption || ''} />
               </div>
             );
           if (block.type === 'cover-imprint')

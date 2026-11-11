@@ -16,7 +16,11 @@ import { measureLines, splitAtVisible, visibleLength } from './splitText';
  * mínimo de líneas a cada lado (ni huérfanas ni viudas) y nunca cae
  * dentro de una llamada de nota ni de un término de glosario.
  *
- * Cada carta se completa a un número par de páginas, de modo que
+ * Reparte por SECCIONES: cada carta es una, y también la galería y el
+ * glosario, que llegan como una entrada o una imagen por bloque. Todo
+ * el libro se pagina así con la misma regla, midiendo.
+ *
+ * Cada sección se completa a un número par de páginas, de modo que
  * siempre empieza en página izquierda y la paridad del folio se
  * mantiene en todo el libro.
  *
@@ -30,7 +34,9 @@ import { measureLines, splitAtVisible, visibleLength } from './splitText';
  * no hay que repetirlas en el código.
  *
  * Props:
- *   letters   [{ id, number, blocks, footnotes, … }]
+ *   sections  [{ blocks, … }] — cartas, galería, glosario…
+ *             Cada página devuelta lleva `section`: el índice de la
+ *             sección a la que pertenece.
  *   codexWidth  ancho del libro abierto (doble página), en px
  *   codexHeight alto del libro, en px
  *   signal    valor que, al cambiar, fuerza una nueva medición
@@ -41,7 +47,8 @@ import { measureLines, splitAtVisible, visibleLength } from './splitText';
 const SPLITTABLE = new Set(['paragraph']);
 
 /** Bloques que no deben quedarse solos al pie de una página */
-const HEADING = new Set(['chapter-header', 'section-title', 'chapter-title']);
+const HEADING = new Set(['chapter-header', 'section-title', 'chapter-title',
+                         'section-head']);
 
 /** Mínimo de líneas de un párrafo a cada lado de un corte */
 const MIN_LINES = 2;
@@ -54,17 +61,17 @@ const MIN_LINES = 2;
  */
 const SAFETY = 4;
 
-export default function Paginator({ letters, codexWidth, codexHeight, signal, onPages }) {
+export default function Paginator({ sections, codexWidth, codexHeight, signal, onPages }) {
   const ref   = useRef(null);
   const ruler = useRef(null);
   const [done, setDone] = useState(false);
   const [box,  setBox]  = useState({ w: 0, h: 0 });
   const { w: boxWidth, h: boxHeight } = box;
 
-  // Lista plana de todos los bloques, con su carta de origen
+  // Lista plana de todos los bloques, con su sección de origen
   const flat = [];
-  letters.forEach((L, li) => {
-    L.blocks.forEach((b, bi) => flat.push({ block: b, li, bi }));
+  sections.forEach((S, li) => {
+    S.blocks.forEach((b, bi) => flat.push({ block: b, li, bi }));
   });
 
   const measure = useCallback(() => {
@@ -104,7 +111,7 @@ export default function Paginator({ letters, codexWidth, codexHeight, signal, on
     let prev = -1;     // índice del bloque anterior EN ESTA página
 
     const open = (li, tone) => {
-      cur = { letterIndex: li, blocks: [], tone };
+      cur = { section: li, blocks: [], tone };
       pages.push(cur);
       used = 0;
       prev = -1;
@@ -126,13 +133,17 @@ export default function Paginator({ letters, codexWidth, codexHeight, signal, on
         return;
       }
 
-      if (!cur || cur.letterIndex !== item.li) open(item.li);
+      if (!cur || cur.section !== item.li) open(item.li);
 
       // Un encabezado no se queda solo al pie: necesita sitio para sí
-      // mismo y para las dos primeras líneas de lo que viene detrás
+      // mismo y para el principio de lo que viene detrás — dos líneas
+      // si es texto partible, el bloque entero si es indivisible (una
+      // imagen de la galería, una entrada del glosario…)
       if (HEADING.has(block.type) && prev >= 0) {
-        const nextLines = 2 * (metrics[i + 1]?.lh || m.lh || 0);
-        if (avail() < gapBefore(i, prev) + m.ink + nextLines) open(item.li);
+        const n = metrics[i + 1];
+        const follow = !n || flat[i + 1].li !== item.li ? 0
+          : gapBefore(i + 1, i) + (n.text ? MIN_LINES * n.text.unit : n.ink);
+        if (avail() < gapBefore(i, prev) + m.ink + follow) open(item.li);
       }
 
       // ── Bloque indivisible ──
@@ -209,18 +220,18 @@ export default function Paginator({ letters, codexWidth, codexHeight, signal, on
       }
     });
 
-    // ── Cada carta, a un número par de páginas ───────────────────────
-    // Así toda carta empieza siempre en página izquierda y el folio
+    // ── Cada sección, a un número par de páginas ─────────────────────────────────────────────
+    // Así toda sección empieza siempre en página izquierda y el folio
     // conserva su paridad: pares a la izquierda, impares a la derecha.
     const even = [];
     let count = 0;
     for (let i = 0; i < pages.length; i++) {
       even.push(pages[i]);
       count++;
-      const lastOfLetter = !pages[i + 1] || pages[i + 1].letterIndex !== pages[i].letterIndex;
-      if (lastOfLetter) {
+      const lastOfSection = !pages[i + 1] || pages[i + 1].section !== pages[i].section;
+      if (lastOfSection) {
         if (count % 2 === 1)
-          even.push({ letterIndex: pages[i].letterIndex, blocks: [], blank: true });
+          even.push({ section: pages[i].section, blocks: [], blank: true });
         count = 0;
       }
     }
@@ -231,7 +242,7 @@ export default function Paginator({ letters, codexWidth, codexHeight, signal, on
       window.__pagination = {
         boxHeight,
         pages: even.map((p, k) => ({
-          folio: k + 2, letter: p.letterIndex, tone: p.tone, blank: p.blank,
+          folio: k + 2, letter: p.section, tone: p.tone, blank: p.blank,
           blocks: p.blocks.map((b) => b.type),
         })),
         blocks: flat.map((f, i) => ({
@@ -269,7 +280,7 @@ export default function Paginator({ letters, codexWidth, codexHeight, signal, on
     }));
     return () => cancelAnimationFrame(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [signal, codexWidth, codexHeight, boxHeight, boxWidth, letters]);
+  }, [signal, codexWidth, codexHeight, boxHeight, boxWidth, sections]);
 
   if (done) return null;
 

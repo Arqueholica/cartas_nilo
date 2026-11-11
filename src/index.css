@@ -232,7 +232,7 @@ sup.fn:hover{color:var(--accent-light)}
 .lb-cap{color:rgba(255,255,255,.72);font-family:var(--font-ui);font-size:.8rem;text-align:center;margin-top:12px;max-width:600px}
 .lb-x{position:absolute;top:14px;right:18px;color:#fff;background:none;border:none;font-size:27px;cursor:pointer;opacity:.6;transition:opacity .2s}.lb-x:hover{opacity:1}
 @media(max-width:960px){:root{--font-size-base:14.5px}.spine{display:none}.pg-l{display:none!important}.pg-r{width:100%!important;border-radius:6px!important}.pg-r::before{display:none!important}.spread.cover-spread .pg-r{border-radius:6px!important}.flip-layer{left:0;width:100%}.under-shadow{left:0;width:100%}}
-@media(max-width:600px){:root{--font-size-base:14px;--notes-w:100vw;--nav-w:85vw}.pg{padding:18px 16px}.hdr h1{font-size:1.6rem}.bar{padding:3px 8px;height:36px}.btn{font-size:10px;height:24px;padding:2px 6px}.nav{width:30px;height:30px;bottom:12px;top:auto;transform:none}.nav:hover{transform:scale(1.05)}.nav-p{left:10px}.nav-n{right:10px}}
+@media(max-width:600px){:root{--font-size-base:14px;--notes-w:100vw;--nav-w:85vw}.pg{padding:var(--band-space) 16px}.pg-band{left:16px;right:16px}.hdr h1{font-size:1.6rem}.bar{padding:3px 8px;height:36px}.btn{font-size:10px;height:24px;padding:2px 6px}.nav{width:30px;height:30px;bottom:12px;top:auto;transform:none}.nav:hover{transform:scale(1.05)}.nav-p{left:10px}.nav-n{right:10px}}
 @media print{.bar,.nav,.nav-strip,.notes-col,.ns-pull-tab,.overlay-bg,.lb,.spine,.flip-layer,.under-shadow{display:none!important}.main-layout{position:static}.shell{display:block;padding:0}.codex{max-width:none;height:auto;max-height:none;display:block}.spread{position:static;opacity:1;pointer-events:all;display:block;page-break-after:always}.pg{width:100%;height:auto;overflow:visible;box-shadow:none}}
 
 /* ======== BLOQUES MULTIMEDIA ======== */
@@ -371,15 +371,31 @@ sup.fn:hover{color:var(--accent-light)}
 .return-btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-ui);font-size:.74rem;font-weight:600;color:var(--accent);background:var(--accent-glow);border:1px solid var(--border);border-radius:5px;padding:6px 12px;cursor:pointer;margin-bottom:16px;transition:all .2s}
 .return-btn:hover{background:var(--accent);color:var(--bg-page);border-color:var(--accent)}
 
-/* ── Etiqueta de página de sección ── */
-.section-page-label{display:block;text-align:center;font-family:var(--font-ui);font-size:.66rem;color:var(--text-muted);margin-top:20px;padding-top:10px;border-top:1px solid var(--border);letter-spacing:1px}
+/* ── Final del libro: galería y glosario ─────────────────────────────
+   Una entrada o una imagen por bloque, directamente en la caja de la
+   página: el paginador las reparte por lo que cabe. El nombre de la
+   sección y la página dentro de ella van en el pie (chrome.js). */
+.section-head{text-align:center;margin:4px 0 22px}
+.section-head-title{font-family:var(--font-display);font-size:1.6rem;font-weight:600;color:var(--accent);margin:0}
+.section-head-title::after{content:'';display:block;width:60px;height:2px;background:var(--accent);opacity:.4;margin:10px auto 0}
+.pg-box > .glossary-entry{margin:0 0 6px}
+.glossary-entry dd{margin:0}
+.pg-box > .gallery-item{margin:0 0 22px}
+/* La imagen lleva su ancho y alto reales (imgDims): con `height:auto`
+   el navegador conoce su proporción antes de descargarla, y el techo
+   de altura la mantiene dentro de la página. */
+.pg-box > .gallery-item .gallery-img-wrap img{height:auto;max-height:230px;object-fit:cover}
 
-/* ── Glosario y galería paginados: sin scroll, encajan en la página ── */
-.glossary--paged,.gallery--paged{height:100%;display:flex;flex-direction:column}
-.glossary--paged .glossary-list{flex:1}
-.gallery--paged .gallery-grid--paged{flex:1;grid-template-columns:1fr;gap:16px;align-content:start}
-.gallery-grid--paged .gallery-item{margin:0}
-.gallery-grid--paged .gallery-img-wrap img{max-height:230px;object-fit:cover;width:100%}
+/* Láminas de la galería: las imágenes no se parten, así que el hueco
+   que queda en una página se reparte arriba y abajo en vez de quedarse
+   todo al pie. La página de apertura no se centra: su título va arriba,
+   como en el glosario. El centrado no altera la medida: estos bloques
+   solo tienen margen inferior, de modo que no hay márgenes que se
+   colapsen de otra manera en un contenedor flexible. */
+.pg--gallery:not(.pg--opens) .pg-box{display:flex;flex-direction:column;justify-content:safe center}
+
+/* Botón de volver a la lectura en la barra superior */
+.bar-return{font-weight:600;color:var(--accent)}
 
 /* ══════════════════════════════════════════════════════════════
    LIBRO COMPLETO — 10 cartas, notas con imagen, secciones

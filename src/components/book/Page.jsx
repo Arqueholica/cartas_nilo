@@ -82,8 +82,15 @@ export default function Page({ side, data, onNoteClick, onLightbox, onStart,
   const tone   = data.tone === 'note' ? ' pg--note' : '';
   const chrome = data.chrome || {};
 
+  // Clases de sección: `pg--gallery`, `pg--glossary`… para que el CSS
+  // pueda componer distinto cada tipo de página, y `pg--opens` en la
+  // página que abre una sección (su título va siempre arriba).
+  const kind  = data.kind && data.kind !== 'letter' ? ` pg--${data.kind}` : '';
+  const first = data.blocks?.[0]?.type;
+  const opens = first === 'section-head' || first === 'chapter-header' ? ' pg--opens' : '';
+
   return (
-    <div className={`pg ${sideClass}${tone}`}>
+    <div className={`pg ${sideClass}${tone}${kind}${opens}`}>
       <Band kind="head" band={chrome.head} />
 
       <div className="pg-box">

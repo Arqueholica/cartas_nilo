@@ -86,6 +86,9 @@ Dos detalles que ahorran trabajo:
 - **El nombre del archivo de imagen en la marca `[Imagen: …]` debe
   coincidir con el nombre real del archivo.** Si no coincide, el sistema
   intenta adivinarlo por el pie de foto, pero no siempre acierta.
+- **Si se añade o se sustituye una imagen, hay que avisar a quien
+  mantiene el lector**: el sistema necesita registrar su tamaño para
+  que la página que la contiene se componga bien.
 
 ---
 

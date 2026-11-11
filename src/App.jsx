@@ -5,15 +5,16 @@
  *   portada (página única) → 10 cartas → galería → glosario
  *   → contraportada (página única)
  *
- * Las páginas de las cartas se calculan en tiempo real midiendo lo que
- * cabe en la caja de texto, de modo que el texto nunca la desborda,
- * aunque se cambie el cuerpo de letra o el tamaño de la ventana.
+ * Todas las páginas —cartas, galería y glosario— se calculan en tiempo
+ * real midiendo lo que cabe en la caja de texto, de modo que nada la
+ * desborda, aunque se cambie el cuerpo de letra o el tamaño de la
+ * ventana.
  */
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import {
   bookMeta, cartas, letters, coverPage, backCoverPage,
-  galleryItems, glossaryFlat, notesIn, allFootnotes,
+  backMatter, glossaryFlat, notesIn, allFootnotes,
 } from './data/books/flaubert-cartas/index';
 
 import { useBook }     from './hooks/useBook';
@@ -26,7 +27,6 @@ import NotesPanel from './components/NotesPanel';
 import Paginator  from './components/book/Paginator';
 
 import { normalizeTerm } from './components/book/blocks/parseText';
-import { paginateGlossary, paginateGallery } from './components/book/paginate';
 import { pageChrome } from './components/book/pageChrome';
 import { chrome }     from './data/books/flaubert-cartas/chrome';
 
@@ -57,78 +57,114 @@ export default function App() {
     return () => { window.removeEventListener('resize', measure); clearTimeout(t); };
   }, [fontStep]);
 
-  /* ── Secciones finales, ya paginadas por cantidad ── */
-  const tail = useMemo(() => {
-    const gallery = paginateGallery(galleryItems, {
-      perPage: 2, title: 'Galería de imágenes',
-    }).map((s) => ({ ...s, kind: 'gallery' }));
-    const gloss = paginateGlossary(glossaryFlat, {
-      perPage: 6, title: 'Glosario', sorted: false,
-    }).map((s) => ({ ...s, kind: 'glossary' }));
-    return { gallery, gloss };
-  }, []);
+  /* ── Secciones que se paginan midiendo: cartas, galería, glosario ──
+     Todo el libro pasa por el mismo paginador. La galería y el glosario
+     llegan con una imagen o una entrada por bloque, así que se reparten
+     por lo que cabe, igual que el texto de las cartas. */
+  const sections = useMemo(() => [
+    ...letters.map((L) => ({ kind: 'letter', ...L })),
+    ...backMatter,
+  ], []);
 
   /* ── Secuencia completa de vistas ── */
-  const { spreads, galleryStart, glossaryStart, letterStart } = useMemo(() => {
+  const { spreads, sectionStart, termSpread } = useMemo(() => {
     const all = [{ single: true, kind: 'cover', page: coverPage }];
     const starts = {};
+    const terms  = {};
 
     if (pages) {
       // Numeración propia, independiente de la del PDF impreso.
-      // La portada es la página 1 pero NUNCA se pagina, así que las
-      // cartas empiezan en la 2. El paginador completa cada carta a un
-      // número par de páginas, de modo que la paridad se conserva:
-      // pares a la izquierda (verso), impares a la derecha (recto).
+      // La portada es la página 1 pero NUNCA se pagina, así que el libro
+      // empieza en la 2. El paginador completa cada sección a un número
+      // par de páginas, de modo que la paridad se conserva: pares a la
+      // izquierda (verso), impares a la derecha (recto). Las páginas en
+      // blanco cuentan, pero no se paginan.
       pages.forEach((pg, k) => {
         pg.folio = pg.blank ? null : String(k + 2);
       });
 
-      // agrupar las páginas calculadas en dobles páginas, por carta
-      let i = 0;
-      while (i < pages.length) {
-        const li = pages[i].letterIndex;
-        const L  = letters[li];
-        if (starts[L.id] === undefined) starts[L.id] = all.length;
+      // Páginas con contenido de cada sección, para «Glosario · 2/5»
+      const totals = {};
+      pages.forEach((pg) => {
+        if (!pg.blank) totals[pg.section] = (totals[pg.section] || 0) + 1;
+      });
+      const seen = {};
 
-        const left  = pages[i];
-        const right = (pages[i + 1] && pages[i + 1].letterIndex === li)
-          ? pages[i + 1] : null;
-
-        // Cabecera y pie resueltos contra los datos de cada página
-        const ctx = {
+      // Datos de cabecera y pie de una página
+      const ctxFor = (S, pg) => {
+        if (S.kind === 'letter') return {
           bookTitle:    bookMeta.title,
           bookAuthor:   bookMeta.author,
           bookImprint:  bookMeta.imprint,
-          chapterLabel: `Carta ${L.number}`,
-          chapterTitle: L.title,       // en estas cartas, el destinatario
-          chapterTo:    L.title,
-          chapterDate:  L.date,
+          chapterLabel: `Carta ${S.number}`,
+          chapterTitle: S.title,       // en estas cartas, el destinatario
+          chapterTo:    S.title,
+          chapterDate:  S.date,
+          folio:        pg.folio,
         };
-        left.chrome = pageChrome(chrome, 'left', { ...ctx, folio: left.folio });
-        if (right) right.chrome = pageChrome(chrome, 'right', { ...ctx, folio: right.folio });
+        const n = pg.blank ? null : (seen[pg.section] = (seen[pg.section] || 0) + 1);
+        const total = totals[pg.section];
+        return {
+          bookTitle:   bookMeta.title,
+          bookAuthor:  bookMeta.author,
+          bookImprint: bookMeta.imprint,
+          section:     n ? (total > 1 ? `${S.label} · ${n}/${total}` : S.label) : null,
+          folio:       pg.folio,
+        };
+      };
 
-        all.push({
+      // Agrupar las páginas en dobles páginas, por sección
+      let i = 0;
+      while (i < pages.length) {
+        const si = pages[i].section;
+        const S  = sections[si];
+        const key = S.id;
+        if (starts[key] === undefined) starts[key] = all.length;
+
+        const left  = pages[i];
+        const right = (pages[i + 1] && pages[i + 1].section === si) ? pages[i + 1] : null;
+
+        // Cabecera y pie: las cartas usan la declaración general; la
+        // galería y el glosario, la de final de libro.
+        const decl = S.kind === 'letter' ? chrome : (chrome.backMatter || chrome);
+        left.chrome = pageChrome(decl, 'left', ctxFor(S, left));
+        if (right) right.chrome = pageChrome(decl, 'right', ctxFor(S, right));
+        left.kind = S.kind;
+        if (right) right.kind = S.kind;
+
+        const view = all.length;
+        if (S.kind === 'glossary') {
+          for (const pg of [left, right]) {
+            for (const blk of pg?.blocks || []) {
+              if (blk.type === 'glossary-entry') terms[normalizeTerm(blk.term)] = view;
+            }
+          }
+        }
+
+        all.push(S.kind === 'letter' ? {
           kind: 'letter',
-          carta: L.number,
-          cartaId: L.id,
-          footnotes: L.footnotes,
+          carta: S.number,
+          cartaId: S.id,
+          footnotes: S.footnotes,
           left,
           right: right || { blocks: [] },
           spreadNotes: [...notesIn(left.blocks), ...notesIn(right?.blocks)],
+        } : {
+          kind: S.kind,
+          left,
+          right: right || { blocks: [] },
         });
         i += right ? 2 : 1;
       }
     }
 
-    const gStart = all.length;
-    all.push(...tail.gallery);
-    const xStart = all.length;
-    all.push(...tail.gloss);
     all.push({ single: true, kind: 'back', page: backCoverPage });
 
-    return { spreads: all, galleryStart: gStart, glossaryStart: xStart,
-             letterStart: starts };
-  }, [pages, tail]);
+    return { spreads: all, sectionStart: starts, termSpread: terms };
+  }, [pages, sections]);
+
+  const galleryStart  = sectionStart.galeria;
+  const glossaryStart = sectionStart.glosario;
 
   /* ── Términos con entrada de glosario ── */
   const glossaryTerms = useMemo(() => {
@@ -147,6 +183,7 @@ export default function App() {
   const [activeTerm,    setActiveTerm]    = useState(null);
 
   const returnToRef = useRef(0);
+  const [hasReturn, setHasReturn] = useState(false);
   const current = spreads[spread] || {};
 
   const { hasRibbonHere, toggleRibbon, ribbon, resume, dismissResume } =
@@ -167,19 +204,27 @@ export default function App() {
     setTimeout(() => setHighlightNote(null), FOCUS_MS);
   }, []);
 
+  // Pulsar un término del texto: ir a la doble página del glosario
+  // donde está SU entrada (no a la primera del glosario) y resaltarla
   const handleTermClick = useCallback((term) => {
+    const target = termSpread[term] ?? glossaryStart;
+    if (target === undefined) return;
     returnToRef.current = spread;
+    setHasReturn(true);
     setActiveTerm(term);
-    goTo(glossaryStart);
+    goTo(target);
     setTimeout(() => setActiveTerm(null), 3000);
-  }, [goTo, glossaryStart, spread]);
+  }, [goTo, glossaryStart, termSpread, spread]);
 
   const handleReturn = useCallback(() => {
     goTo(returnToRef.current || 0);
   }, [goTo]);
 
   const goToSection = useCallback((target) => {
-    if (spread < galleryStart) returnToRef.current = spread;
+    if (spread < (galleryStart ?? Infinity)) {
+      returnToRef.current = spread;
+      setHasReturn(spread > 0);
+    }
     goTo(target);
   }, [goTo, spread, galleryStart]);
 
@@ -216,10 +261,12 @@ export default function App() {
         onFullscreen={toggleFS}
         onBookmark={toggleRibbon}
         bookmarked={hasRibbonHere}
+        onReturn={(current.kind === 'gallery' || current.kind === 'glossary')
+          && hasReturn ? handleReturn : null}
       />
 
       <Sidebar
-        letters={cartas.map((c) => ({ ...c, sp: letterStart[c.id] }))}
+        letters={cartas.map((c) => ({ ...c, sp: sectionStart[c.id] }))}
         spread={spread}
         onGoTo={goToSection}
         open={navOpen}
@@ -228,8 +275,7 @@ export default function App() {
         bookTitle={bookMeta.title}
         bookAuthor={bookMeta.author}
         extraSections={[
-          { label: 'Galería de imágenes', sp: galleryStart },
-          { label: 'Glosario',            sp: glossaryStart },
+          ...backMatter.map((S) => ({ label: S.label, sp: sectionStart[S.id] })),
         ]}
       />
 
@@ -278,7 +324,7 @@ export default function App() {
 
       {/* Medición oculta que reparte el texto en páginas */}
       <Paginator
-        letters={letters}
+        sections={sections}
         codexWidth={box.w}
         codexHeight={box.h}
         signal={`${box.w}x${box.h}x${fontStep}`}

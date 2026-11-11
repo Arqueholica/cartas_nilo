@@ -26,6 +26,19 @@ export const chrome = {
     verso: { left: null, center: 'folio', right: null },
     recto: { left: null, center: 'folio', right: null },
   },
+
+  /* Galería y glosario. No llevan folio: en el pie va el nombre de la
+     sección y la página dentro de ella («Glosario · 2/5»). */
+  backMatter: {
+    head: {
+      verso: { left: null, center: null, right: null },
+      recto: { left: null, center: null, right: null },
+    },
+    foot: {
+      verso: { left: null, center: 'section', right: null },
+      recto: { left: null, center: 'section', right: null },
+    },
+  },
 };
 
 export default chrome;

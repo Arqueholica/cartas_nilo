@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { parseText } from './parseText';
+import { imgDims } from '../imageSizes';
 
 /**
  * InlineNote — nota integrada colapsable con imagen(es)
@@ -26,7 +27,7 @@ export default function InlineNote({ title, image, images, caption, gallery, onL
           <div className="igal">
             {allImages.map((src, i) => (
               <img
-                key={i} src={src} alt={`${title} ${i + 1}`} loading="lazy"
+                key={i} src={src} {...imgDims(src)} alt={`${title} ${i + 1}`} loading="lazy"
                 onClick={() => onLightbox?.(src, caption)}
               />
             ))}
@@ -34,7 +35,7 @@ export default function InlineNote({ title, image, images, caption, gallery, onL
         ) : (
           allImages.map((src, i) => (
             <div key={i} className="iw" onClick={() => onLightbox?.(src, caption)}>
-              <img src={src} alt={title} loading="lazy" />
+              <img src={src} {...imgDims(src)} alt={title} loading="lazy" />
               <span className="zi">⤢</span>
             </div>
           ))

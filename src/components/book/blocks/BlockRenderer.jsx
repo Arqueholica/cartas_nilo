@@ -30,6 +30,12 @@
  *   lottie           Animación vectorial Lottie (.json)
  *   panorama         Fotografía 360° equirrectangular (.jpg)
  *   image-sequence   GIF / WebP animado / secuencia de frames
+ *
+ *   FINAL DEL LIBRO
+ *   ───────────────
+ *   section-head     Título de sección y botón de volver a la lectura
+ *   glossary-entry   Una entrada del glosario
+ *   gallery-item     Una imagen de la galería, con su pie y su texto
  */
 import Paragraph       from './Paragraph';
 import Verse           from './Verse';
@@ -39,12 +45,14 @@ import FullNote        from './FullNote';
 import FullNotePage    from './FullNotePage';
 import Glossary        from './Glossary';
 import Gallery         from './Gallery';
-import GlossaryPage    from './GlossaryPage';
-import GalleryPage     from './GalleryPage';
+import SectionHead     from './SectionHead';
+import GlossaryEntry   from './GlossaryEntry';
+import GalleryItem     from './GalleryItem';
 
 // Multimedia — carga diferida (lazy) para no penalizar
 // el tiempo de carga inicial del libro
 import { lazy, Suspense } from 'react';
+import { imgDims } from '../imageSizes';
 const VideoBlock         = lazy(() => import('./VideoBlock'));
 const AudioBlock         = lazy(() => import('./AudioBlock'));
 const Model3DBlock       = lazy(() => import('./Model3DBlock'));
@@ -83,7 +91,7 @@ export default function BlockRenderer({ block, onNoteClick, onLightbox,
     case 'image':
       return (
         <figure className="image-block" onClick={() => onLightbox?.(props.src, props.caption)}>
-          <img src={props.src} alt={props.caption || ''} loading="lazy" />
+          <img src={props.src} {...imgDims(props.src)} alt={props.caption || ''} loading="lazy" />
           {props.caption && <figcaption className="image-caption">{props.caption}</figcaption>}
         </figure>
       );
@@ -173,11 +181,16 @@ export default function BlockRenderer({ block, onNoteClick, onLightbox,
     case 'gallery':
       return <Gallery {...props} onLightbox={onLightbox} />;
 
-    case 'glossary-page':
-      return <GlossaryPage {...props} activeTerm={activeTerm} onReturn={onReturn} />;
+    // Una entrada o una imagen por bloque: así el glosario y la galería
+    // se reparten en páginas midiendo lo que cabe, como las cartas.
+    case 'section-head':
+      return <SectionHead {...props} />;
 
-    case 'gallery-page':
-      return <GalleryPage {...props} onLightbox={onLightbox} onReturn={onReturn} />;
+    case 'glossary-entry':
+      return <GlossaryEntry {...props} activeTerm={activeTerm} />;
+
+    case 'gallery-item':
+      return <GalleryItem {...props} onLightbox={onLightbox} />;
 
     // ── Desconocido ────────────────────────────────────────────────────────
     default:

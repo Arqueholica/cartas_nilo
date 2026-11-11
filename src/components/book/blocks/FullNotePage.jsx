@@ -1,4 +1,5 @@
 import { parseText } from './parseText';
+import { imgDims } from '../imageSizes';
 
 /**
  * FullNotePage — nota completa que ocupa una página entera.
@@ -29,6 +30,7 @@ export default function FullNotePage({ title, blocks = [], cont, runsOn, onLight
         <figure className="fnp-fig" key={i}>
           <img
             src={img.src}
+            {...imgDims(img.src)}
             alt={img.caption || title || ''}
             loading="lazy"
             onClick={() => onLightbox?.(img.src, img.caption)}
