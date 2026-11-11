@@ -82,7 +82,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .rn-ta:focus{outline:none;border-color:var(--accent)}
 .rn-add-btn{font-family:var(--font-ui);font-size:.75rem;color:var(--accent);background:none;border:1px dashed var(--border);border-radius:5px;padding:9px;cursor:pointer;transition:all .2s;text-align:center;width:100%;margin-top:4px}
 .rn-add-btn:hover{background:var(--accent-glow);border-color:var(--accent)}
-.codex{position:relative;width:97%;max-width:1200px;height:calc(100vh - var(--bar-h) - 20px);max-height:870px;perspective:2400px;display:flex}
+.codex{position:relative;width:97%;max-width:1200px;height:calc(100vh - var(--bar-h) - 20px);height:calc(100dvh - var(--bar-h) - 20px);max-height:870px;perspective:2400px;display:flex}
 .spine{position:absolute;left:50%;top:0;bottom:0;width:18px;transform:translateX(-50%);z-index:30;pointer-events:none;background:linear-gradient(to right,transparent 0%,var(--spine-shadow) 20%,rgba(0,0,0,.06) 40%,rgba(255,255,255,.04) 50%,rgba(0,0,0,.06) 60%,var(--spine-shadow) 80%,transparent 100%)}
 .spine::before{content:'';position:absolute;left:50%;top:4%;bottom:4%;width:1px;background:var(--border);opacity:.45}
 .spread{position:absolute;inset:0;display:flex;pointer-events:none;opacity:0}
@@ -230,8 +230,8 @@ sup.fn:hover{color:var(--accent-light)}
 .lb.open img{transform:scale(1)}
 .lb-cap{color:rgba(255,255,255,.72);font-family:var(--font-ui);font-size:.8rem;text-align:center;margin-top:12px;max-width:600px}
 .lb-x{position:absolute;top:14px;right:18px;color:#fff;background:none;border:none;font-size:27px;cursor:pointer;opacity:.6;transition:opacity .2s}.lb-x:hover{opacity:1}
-@media(max-width:960px){:root{--font-size-base:14.5px}.spine{display:none}.pg-l{display:none!important}.pg-r{width:100%!important;border-radius:6px!important}.pg-r::before{display:none!important}.spread.cover-spread .pg-r{border-radius:6px!important}.flip-layer{left:0;width:100%}.under-shadow{left:0;width:100%}}
-@media(max-width:600px){:root{--font-size-base:14px;--notes-w:100vw;--nav-w:85vw}.pg{padding:var(--band-space) 16px}.pg-band{left:16px;right:16px}.hdr h1{font-size:1.6rem}.bar{padding:3px 8px;height:36px}.btn{font-size:10px;height:24px;padding:2px 6px}.nav{width:30px;height:30px;bottom:12px;top:auto;transform:none}.nav:hover{transform:scale(1.05)}.nav-p{left:10px}.nav-n{right:10px}}
+@media(max-width:960px){:root{--font-size-base:14.5px}}
+@media(max-width:600px){:root{--font-size-base:14px;--notes-w:100vw;--nav-w:85vw}.pg{padding:var(--band-space) 16px}.pg-band{left:16px;right:16px}.hdr h1{font-size:1.6rem}:root{--bar-h:38px}.bar{padding:3px 8px}.btn{font-size:10px;height:24px;padding:2px 6px}.nav{width:30px;height:30px;bottom:12px;top:auto;transform:none}.nav:hover{transform:scale(1.05)}.nav-p{left:10px}.nav-n{right:10px}}
 @media print{.bar,.nav,.nav-strip,.notes-col,.ns-pull-tab,.overlay-bg,.lb,.spine,.flip-layer,.under-shadow{display:none!important}.main-layout{position:static}.shell{display:block;padding:0}.codex{max-width:none;height:auto;max-height:none;display:block}.spread{position:static;opacity:1;pointer-events:all;display:block;page-break-after:always}.pg{width:100%;height:auto;overflow:visible;box-shadow:none}}
 
 /* ======== BLOQUES MULTIMEDIA ======== */
@@ -383,7 +383,7 @@ sup.fn:hover{color:var(--accent-light)}
 /* La imagen lleva su ancho y alto reales (imgDims): con `height:auto`
    el navegador conoce su proporción antes de descargarla, y el techo
    de altura la mantiene dentro de la página. */
-.pg-box > .gallery-item .gallery-img-wrap img{height:auto;max-height:280px;object-fit:contain;object-position:center}
+.pg-box > .gallery-item .gallery-img-wrap img{height:auto;max-height:min(280px, calc(var(--box-h, 600px) - 9rem));object-fit:contain;object-position:center}
 
 /* Láminas de la galería: las imágenes no se parten, así que el hueco
    que queda en una página se reparte arriba y abajo en vez de quedarse
@@ -548,10 +548,7 @@ sup.fn:hover{color:var(--accent-light)}
   transform:scale(1.03);filter:none!important;opacity:1!important;
   position:relative;z-index:2}
 
-@media(max-width:960px){
-  .pg-s{width:92%}
-  .ribbon{left:auto;right:16px;transform:none}
-}
+
 
 /* ══════════════════════════════════════════════════════════════
    NOTA COMPLETA COMO PÁGINA · CINTA EN EL LOMO
@@ -576,7 +573,7 @@ sup.fn:hover{color:var(--accent-light)}
 /* La ilustración cede altura antes que empujar el texto fuera de la
    página: una imagen vertical, a ancho completo, se saldría de la caja. */
 .fnp-fig{margin:0 0 12px;flex:0 1 auto;min-height:0}
-.fnp-fig img{width:100%;height:auto;max-height:min(40vh,320px);
+.fnp-fig img{width:100%;height:auto;max-height:min(40vh, 320px, calc(var(--box-h, 600px) * .45));
   object-fit:contain;object-position:center;display:block;cursor:zoom-in}
 .fnp-cap{font-family:var(--font-ui);font-size:.63rem;line-height:1.45;
   color:var(--text-muted);margin-top:5px}
@@ -592,7 +589,7 @@ sup.fn:hover{color:var(--accent-light)}
   text-align:justify;hyphens:auto;margin:0 0 .6em;
   break-inside:avoid-column}
 .fnp-text em{color:var(--accent);font-style:italic}
-@media(max-width:960px){ .fnp-cols{column-count:1;column-rule:none} }
+
 
 /* La cinta del marcador, saliendo del lomo */
 .ribbon{background:linear-gradient(to bottom,var(--accent-light),var(--accent))}
@@ -699,3 +696,107 @@ sup.fn:hover{color:var(--accent-light)}
 
 @media(max-width:600px){.ro-panel{position:fixed;top:calc(var(--bar-h) + 6px);left:8px;right:8px;width:auto}
   .ro-panel::before{display:none}}
+
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE: VISTA, ORIENTACIÓN Y PUNTERO
+   ──────────────────────────────────────────────────────────────
+   La vista no se decide aquí con cortes de ancho: la decide
+   useLayout.js con el ancho, el alto y la orientación, y la
+   publica en <html> como atributos. El CSS lee esos atributos,
+   así que código y estilos usan siempre la misma decisión:
+
+     data-layout       spread   doble página
+                       single   una página por vista
+     data-orientation  landscape | portrait
+     data-pointer      fine (ratón) | coarse (dedo)
+
+   Los @media de ancho que quedan solo ajustan tipografía y
+   márgenes; los de alto, las pantallas apaisadas muy bajas.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Página única ──
+   El libro se estrecha a una página de ancho de línea cómodo y se
+   centra; la página ocupa la vista entera. Sin lomo: el paso de
+   página anima la vista completa. */
+[data-layout="single"] .codex{width:min(97%, 640px)}
+/* En vertical, la página puede crecer hacia abajo: el tope de 870 px
+   es para la doble página en pantallas grandes */
+[data-layout="single"][data-orientation="portrait"] .codex{max-height:none}
+[data-layout="single"] .pg-s,
+[data-layout="single"] .pg-solo{width:100%}
+.pg-solo{border-radius:8px;background:var(--bg-page);
+  box-shadow:0 10px 36px var(--shadow-deep),0 2px 8px var(--shadow)}
+.pg-solo.pg--note{background:var(--bg-note-page)}
+[data-layout="single"] .flip-layer,
+[data-layout="single"] .under-shadow{left:0;width:100%}
+/* La cinta, sin lomo del que colgar, cae del borde superior derecho */
+[data-layout="single"] .ribbon{left:auto;right:18px;transform:none}
+
+/* Nota completa: a una columna cuando la página es estrecha */
+[data-layout="single"][data-orientation="portrait"] .fnp-cols{column-count:1;column-rule:none}
+
+/* ── Dedo: se pasa página deslizando o tocando los bordes ──
+   Las flechas sobran y taparían el texto. */
+[data-pointer="coarse"] .nav{display:none}
+
+/* ── Notas al margen en vertical: hoja que sube desde abajo ──
+   Deja a la vista la parte de arriba del texto, que es donde está la
+   llamada de nota. Se cierra tocando fuera o deslizándola hacia abajo. */
+[data-layout="single"][data-orientation="portrait"] .notes-col{
+  top:auto;left:0;right:0;bottom:0;width:100%;height:62vh;height:62dvh;
+  border-left:none;border-top:1px solid var(--border);border-radius:16px 16px 0 0;
+  box-shadow:0 -10px 34px var(--shadow-deep);transform:translateY(102%)}
+[data-layout="single"][data-orientation="portrait"] .notes-col.open{transform:translateY(0)}
+[data-layout="single"][data-orientation="portrait"] .nc-head{position:relative;padding-top:18px;touch-action:none}
+[data-layout="single"][data-orientation="portrait"] .nc-head::before{content:'';position:absolute;
+  top:7px;left:50%;width:38px;height:4px;margin-left:-19px;border-radius:2px;background:var(--border)}
+.notes-backdrop{display:none}
+[data-layout="single"][data-orientation="portrait"] .notes-backdrop{display:block;position:fixed;inset:0;
+  z-index:149;background:var(--bg-overlay);opacity:0;pointer-events:none;transition:opacity .3s}
+[data-layout="single"][data-orientation="portrait"] .notes-backdrop.open{opacity:.55;pointer-events:auto}
+/* La pestaña «Notas» pasa a ser una píldora abajo a la derecha */
+[data-layout="single"][data-orientation="portrait"] .ns-pull-tab{top:auto;bottom:16px;right:14px;
+  writing-mode:horizontal-tb;border-radius:16px;padding:6px 14px;letter-spacing:1px;
+  border:1px solid var(--border);box-shadow:0 4px 14px var(--shadow)}
+
+/* ── Barra superior en pantallas estrechas ──
+   Se abrevia la indicación central (la posición exacta sigue en el
+   pie de página) y, si está el botón de volver, la indicación cede su
+   sitio. */
+.bar-c-short{display:none}
+@media(max-width:600px){
+  .bar-c-pos{display:none}
+  .bar-return .lbl-long{display:none}
+  .bar:has(.bar-return) .bar-c{display:none}
+  .resume-bar{left:8px;right:8px;bottom:12px;transform:none;flex-wrap:wrap;justify-content:center;
+    text-align:center;gap:8px}
+}
+.bar-return .lbl-short{display:none}
+@media(max-width:600px){.bar-return .lbl-short{display:inline}}
+
+/* ── Pantallas apaisadas bajas (móvil en horizontal) ──
+   Cada píxel de alto cuenta: franjas de cabecera y pie más finas,
+   barra más baja y una portada compacta que cabe entera. */
+@media(orientation:landscape) and (max-height:500px){
+  :root{--bar-h:36px;--band-space:30px;--band-gap:8px;--band-rule-gap:6px;--band-h:16px}
+  .codex{height:calc(100vh - var(--bar-h) - 10px);height:calc(100dvh - var(--bar-h) - 10px)}
+  .shell{padding:5px}
+  .cover{padding:12px 18px;min-height:0;height:100%}
+  .cover .orn{display:none}
+  .cover .ct{font-size:1.5rem}
+  .cover--rich .au{margin-top:4px}
+  .cover-img{margin:8px auto;max-width:none}
+  .cover-imprint{padding-top:6px}
+  .cover .go{margin-top:8px}
+  .hdr h1{font-size:1.4rem}
+}
+/* La imagen de portada cede altura antes que empujar el resto fuera */
+.cover-img{min-height:0}
+.cover-img img{max-height:100%;width:auto;max-width:100%;object-fit:contain;margin:0 auto}
+
+/* Continuación de una nota completa: el título, ya visto en la página
+   anterior, se recuerda en una línea discreta en vez de repetirse
+   grande. El paginador mide esta cabecera tal cual. */
+.fnp--cont .fnp-title{font-size:.86rem;font-weight:600;margin:0 0 10px;color:var(--text-secondary)}
+.fnp--cont .fnp-title::after{display:none}

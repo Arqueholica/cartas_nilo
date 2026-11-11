@@ -61,7 +61,8 @@ function Band({ kind, band }) {
 
 export default function Page({ side, data, onNoteClick, onLightbox, onStart,
                                onTermClick, glossaryTerms, activeTerm, onReturn }) {
-  const sideClass = side === 'left' ? 'pg-l' : side === 'single' ? 'pg-s' : 'pg-r';
+  const sideClass = side === 'left' ? 'pg-l' : side === 'single' ? 'pg-s'
+                  : side === 'solo' ? 'pg-solo' : 'pg-r';
 
   if (!data) return <div className={`pg ${sideClass} pg-blank`} />;
 
@@ -103,7 +104,7 @@ export default function Page({ side, data, onNoteClick, onLightbox, onStart,
             onTermClick={onTermClick}
             glossaryTerms={glossaryTerms}
             activeTerm={activeTerm}
-            onReturn={side === 'left' || side === 'single' ? onReturn : null}
+            onReturn={side === 'right' ? null : onReturn}
           />
         ))}
       </div>

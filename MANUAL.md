@@ -393,7 +393,9 @@ La **portada es la página 1 pero nunca se pagina**, así que las cartas
 empiezan en la 2. Los folios pares caen siempre en la página izquierda y
 los impares en la derecha: para que la paridad se conserve, cada carta
 se completa a un número par de páginas con una página en blanco, que
-cuenta pero no se pagina, como en el impreso.
+cuenta pero no se pagina, como en el impreso. En página única (móvil,
+tableta en vertical) no hay izquierda ni derecha y no se añaden páginas
+en blanco.
 
 Solo las cartas llevan folio. El glosario y la galería llevan en el pie
 su propia etiqueta («Galería de imágenes · 3/24»), declarada en
@@ -486,7 +488,91 @@ nota y la resalta mientras difumina las demás durante cinco segundos.
 
 ---
 
-## 8. Decisiones vigentes
+## 8. Pantallas y orientación
+
+### Qué vista se usa
+
+La vista no depende del tipo de aparato sino del **espacio**, y la
+orientación forma parte de la decisión (`hooks/useLayout.js`):
+
+| Pantalla | Vista |
+|---|---|
+| Horizontal, al menos 900 × 520 px (ordenador, tableta en horizontal) | doble página |
+| Vertical (móvil, tableta) | una página por vista |
+| Horizontal pero baja (móvil en horizontal) | una página por vista, de ancho de línea cómodo |
+
+Los umbrales están en `SPREAD_MIN`, en ese mismo archivo.
+
+`useLayout` publica tres atributos en `<html>`, y el CSS los lee en vez
+de repetir la decisión con sus propios cortes de ancho:
+
+```
+data-layout       spread | single
+data-orientation  landscape | portrait
+data-pointer      fine (ratón) | coarse (dedo)
+```
+
+Los `@media` de ancho que quedan solo ajustan tipografía y márgenes; el
+de alto (`max-height: 500px` en horizontal) compacta las pantallas
+apaisadas bajas: franjas de cabecera y pie más finas, barra más baja y
+portada compacta.
+
+### Página única
+
+En página única el paginador mide sobre una página patrón que ocupa la
+vista entera, ya no rellena con páginas en blanco para la paridad, y cada
+página es una vista. La cabecera y el pie siguen la paridad del folio, así
+que lo declarado para verso y recto en `chrome.js` se respeta. El libro se
+estrecha a un máximo de 640 px de ancho, para que la línea se lea bien
+también en tableta.
+
+Al **girar** el aparato el libro se repagina y el lector sigue donde
+estaba, gracias a las anclas.
+
+### Dedo
+
+En pantallas táctiles se pasa página **deslizando** o **tocando el borde**
+de la página (el cuarto izquierdo retrocede, el cuarto derecho avanza).
+Tocar algo que ya hace algo —una llamada de nota, un término, una nota
+integrada, una imagen, la cinta— no pasa página. Las flechas se ocultan.
+
+### Notas, barra y pantalla completa
+
+- **Notas al margen en vertical:** hoja que sube desde abajo, hasta dos
+  tercios de la pantalla, y deja a la vista la llamada de nota. Se cierra
+  tocando fuera o deslizándola hacia abajo. La pestaña «Notas» pasa a ser
+  una píldora abajo a la derecha.
+- **Barra superior en pantallas estrechas:** la indicación central se
+  abrevia («Carta II»; la posición exacta sigue en el pie), «Volver a la
+  lectura» pasa a «Volver», y cuando está ese botón la indicación central
+  cede su sitio.
+- **Pantalla completa:** el botón solo aparece si el navegador la admite
+  (en iPhone no).
+- **Altura real de la ventana:** se usa `100dvh`, que en móvil descuenta
+  la barra de direcciones del navegador.
+
+### Notas completas en pantallas pequeñas
+
+- Una nota que no cabe en una página continúa en la siguiente («Nota ·
+  continúa»), con el título en una línea discreta.
+- Si un párrafo no cabe ni solo, se parte por un espacio, dejando al
+  menos un par de líneas en la página siguiente.
+- Si la cabecera de la nota (imagen, pie y título) no deja sitio para
+  unas líneas de texto, la primera página lleva solo la cabecera.
+
+### Cómo se verifica
+
+El libro se recorre entero en seis configuraciones: móvil en vertical y
+en horizontal, Android, tableta en vertical y en horizontal, y escritorio.
+En cada una se comprueba que ninguna página desborda, ni hacia abajo ni
+hacia los lados (columnas de las notas), y se calcula una **huella del
+texto completo** —todo el texto de las cartas y las notas, sin
+espacios—. La huella tiene que ser idéntica en todas las configuraciones:
+es la garantía de que al repaginar no se pierde ni se duplica nada.
+
+---
+
+## 9. Decisiones vigentes
 
 - **Las notas se conservan todas.** El impreso recortó unas 60 por
   espacio; en digital se mantienen y las no impresas se marcan
@@ -507,7 +593,7 @@ nota y la resalta mientras difumina las demás durante cinco segundos.
 
 ---
 
-## 9. Pendiente
+## 10. Pendiente
 
 - **Las entradas del glosario no se parten entre páginas.** Una entrada
   larga que no cabe al pie pasa entera a la siguiente y deja un hueco de
@@ -518,9 +604,9 @@ nota y la resalta mientras difumina las demás durante cinco segundos.
   notas están incompletas (3 de las 5 que cita el texto).
 - Un pie de foto del original trae un paréntesis sin cerrar
   —«Alexandre Bida (1823-1895.»—; se ha respetado tal cual.
-- **Pantallas estrechas (≤ 960 px).** El lector muestra una sola página,
-  pero el CSS oculta las páginas izquierdas en vez de repaginar a una
-  página por vista, así que en móvil y tableta vertical falta la mitad
-  del contenido. Hay que añadir un modo de página única al paginador.
+- **Notas completas de un solo párrafo en tableta horizontal:** a veces
+  dejan en la página de continuación solo un par de líneas. Se puede
+  afinar reduciendo un poco la imagen de la nota cuando eso evita la
+  página extra.
 - **Sonido:** falta el archivo `public/audio/page-turn.mp3` (ver
   «Opciones de lectura»).

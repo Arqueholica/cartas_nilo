@@ -6,7 +6,7 @@ import ReadingOptions from './ReadingOptions';
  *
  *   izquierda  índice · marcador · (volver a la lectura)
  *   centro     dónde está el lector
- *   derecha    opciones de lectura · pantalla completa
+ *   derecha    opciones de lectura · pantalla completa (si el navegador la admite)
  *
  * Tema, tamaño de letra, modo del marcador, animaciones y sonido viven
  * en el panel «Opciones de lectura» (botón «Aa»).
@@ -25,8 +25,8 @@ export default function Header({ spread, total, label,
                                  bookmarkMode, onBookmark, bookmarked, onReturn,
                                  optionsOpen, onOptionsToggle, onOptionsClose,
                                  prefs, onSet, onFont, soundReady }) {
-  const center = label ? `${label} · ${spread + 1}/${total}`
-                       : `${spread + 1} / ${total}`;
+  // La pantalla completa no existe en todos los navegadores (iPhone)
+  const canFullscreen = typeof document !== 'undefined' && document.fullscreenEnabled;
 
   const isAuto = bookmarkMode === 'auto';
   const bookmarkTitle = isAuto
@@ -59,13 +59,19 @@ export default function Header({ spread, total, label,
             <div className="sep" />
             <button className="btn bar-return" onClick={onReturn}
                     title="Volver a la página que estabas leyendo">
-              ← Volver a la lectura
+              ← <span className="lbl-long">Volver a la lectura</span>
+              <span className="lbl-short">Volver</span>
             </button>
           </>
         )}
       </div>
 
-      <div className="bar-c">{center}</div>
+      {/* En pantallas estrechas solo se ve la etiqueta («Carta II»); la
+          posición exacta sigue en el pie de página */}
+      <div className="bar-c">
+        <span className="bar-c-label">{label || ''}</span>
+        <span className="bar-c-pos">{label ? ' · ' : ''}{spread + 1}/{total}</span>
+      </div>
 
       <div className="bar-r">
         <div className="ro-anchor">
@@ -88,13 +94,17 @@ export default function Header({ spread, total, label,
             soundReady={soundReady}
           />
         </div>
-        <div className="sep" />
-        <button className="btn icon-btn" onClick={onFullscreen}
-                title="Pantalla completa" aria-label="Pantalla completa">
-          <svg viewBox="0 0 16 16">
-            <path d="M0 0h5v2H2v3H0V0zm0 11h2v3h3v2H0v-5zm16 5h-5v-2h3v-3h2v5zm0-11h-2V2h-3V0h5z" />
-          </svg>
-        </button>
+        {canFullscreen && (
+          <>
+            <div className="sep" />
+            <button className="btn icon-btn" onClick={onFullscreen}
+                    title="Pantalla completa" aria-label="Pantalla completa">
+              <svg viewBox="0 0 16 16">
+                <path d="M0 0h5v2H2v3H0V0zm0 11h2v3h3v2H0v-5zm16 5h-5v-2h3v-3h2v5zm0-11h-2V2h-3V0h5z" />
+              </svg>
+            </button>
+          </>
+        )}
       </div>
     </header>
   );

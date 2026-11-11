@@ -20,6 +20,7 @@ import {
 import { useBook }     from './hooks/useBook';
 import { useBookmark } from './hooks/useBookmark';
 import { useReaderPrefs } from './hooks/useReaderPrefs';
+import { useLayout }      from './hooks/useLayout';
 
 import Header     from './components/Header';
 import Sidebar    from './components/Sidebar';
@@ -48,6 +49,9 @@ export default function App() {
   const [box, setBox]       = useState({ w: 0, h: 0 });
   const [pages, setPages]   = useState(null);
 
+  /* ── Vista: doble página o página única, según pantalla y orientación ── */
+  const { layout } = useLayout();
+
   /* ── Opciones de lectura (tema, letra, marcador, animaciones…) ── */
   const { prefs, set: setPref, stepFont } = useReaderPrefs();
   const fontStep = prefs.fontStep;
@@ -69,7 +73,7 @@ export default function App() {
     window.addEventListener('resize', measure);
     const t = setTimeout(measure, 300);
     return () => { window.removeEventListener('resize', measure); clearTimeout(t); };
-  }, [fontStep]);
+  }, [fontStep, layout]);
 
   /* ── Secciones que se paginan midiendo: cartas, galería, glosario ──
      Todo el libro pasa por el mismo paginador. La galería y el glosario
@@ -127,7 +131,9 @@ export default function App() {
         };
       };
 
-      // Agrupar las páginas en dobles páginas, por sección
+      // Agrupar las páginas en vistas, por sección: dobles páginas, o una
+      // página por vista en pantallas que no dan para dos
+      const solo = layout === 'single';
       let i = 0;
       while (i < pages.length) {
         const si = pages[i].section;
@@ -136,12 +142,15 @@ export default function App() {
         if (starts[key] === undefined) starts[key] = all.length;
 
         const left  = pages[i];
-        const right = (pages[i + 1] && pages[i + 1].section === si) ? pages[i + 1] : null;
+        const right = !solo && pages[i + 1] && pages[i + 1].section === si ? pages[i + 1] : null;
 
         // Cabecera y pie: las cartas usan la declaración general; la
         // galería y el glosario, la de final de libro.
         const decl = S.kind === 'letter' ? chrome : (chrome.backMatter || chrome);
-        left.chrome = pageChrome(decl, 'left', ctxFor(S, left));
+        // En página única, la página hace de verso o de recto según la
+        // paridad de su folio, como si el libro estuviera abierto
+        const leftSide = solo && (Number(left.folio) || i + 2) % 2 === 1 ? 'right' : 'left';
+        left.chrome = pageChrome(decl, leftSide, ctxFor(S, left));
         if (right) right.chrome = pageChrome(decl, 'right', ctxFor(S, right));
         left.kind = S.kind;
         if (right) right.kind = S.kind;
@@ -160,11 +169,13 @@ export default function App() {
           carta: S.number,
           cartaId: S.id,
           footnotes: S.footnotes,
+          solo,
           left,
           right: right || { blocks: [] },
           spreadNotes: [...notesIn(left.blocks), ...notesIn(right?.blocks)],
         } : {
           kind: S.kind,
+          solo,
           left,
           right: right || { blocks: [] },
         });
@@ -175,7 +186,7 @@ export default function App() {
     all.push({ single: true, kind: 'back', page: backCoverPage });
 
     return { spreads: all, sectionStart: starts, termSpread: terms };
-  }, [pages, sections]);
+  }, [pages, sections, layout]);
 
   const galleryStart  = sectionStart.galeria;
   const glossaryStart = sectionStart.glosario;
@@ -366,7 +377,8 @@ export default function App() {
         sections={sections}
         codexWidth={box.w}
         codexHeight={box.h}
-        signal={`${box.w}x${box.h}x${fontStep}`}
+        layout={layout}
+        signal={`${box.w}x${box.h}x${fontStep}x${layout}`}
         onPages={setPages}
       />
     </>

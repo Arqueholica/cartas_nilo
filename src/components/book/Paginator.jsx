@@ -39,6 +39,9 @@ import { measureLines, splitAtVisible, sliceElement } from './splitText';
  *             sección a la que pertenece.
  *   codexWidth  ancho del libro abierto (doble página), en px
  *   codexHeight alto del libro, en px
+ *   layout    'spread' (doble página) | 'single' (una página por vista).
+ *             Cambia la página patrón —media vista o vista entera— y si
+ *             las secciones se completan a un número par de páginas.
  *   signal    valor que, al cambiar, fuerza una nueva medición
  *   onPages   callback con las páginas calculadas
  *
@@ -68,7 +71,15 @@ const MIN_LINES = 2;
  */
 const SAFETY = 4;
 
-export default function Paginator({ sections, codexWidth, codexHeight, signal, onPages }) {
+/** Alto mínimo, en px, para empezar el texto de una nota completa en la
+ *  misma página que su cabecera (unas tres líneas) */
+const NOTE_MIN_TEXT = 72;
+
+/** Caracteres mínimos del trozo de un párrafo de nota que pasa a la
+ *  página siguiente (un par de líneas a dos columnas) */
+const NOTE_MIN_TAIL = 90;
+
+export default function Paginator({ sections, codexWidth, codexHeight, layout = 'spread', signal, onPages }) {
   const ref   = useRef(null);
   const ruler = useRef(null);
   const [done, setDone] = useState(false);
@@ -253,7 +264,40 @@ export default function Paginator({ sections, codexWidth, codexHeight, signal, o
     // Retirar las copias de medición
     scratch.forEach((el) => el.remove());
 
-    // ── Cada sección, a un número par de páginas ─────────────────────────────────────────────
+    // Entregar el reparto (y, en desarrollo, dejarlo a mano para poder
+    // auditar por qué una página ha quedado como ha quedado)
+    const finish = (list) => {
+      if (import.meta.env.DEV) {
+        window.__pagination = {
+          boxHeight,
+          layout,
+          pages: list.map((p, k) => ({
+            folio: k + 2, letter: p.section, tone: p.tone, blank: p.blank,
+            used: p.used, anchor: p.anchor,
+            blocks: p.blocks.map((b) => b.type),
+          })),
+          blocks: flat.map((f, i) => ({
+            i, letter: f.li, type: f.block.type,
+            ink: Math.round(metrics[i].ink),
+            gap: Math.round(gapBefore(i, i - 1)),
+            lines: metrics[i].text ? metrics[i].text.count : null,
+            unit:  metrics[i].text ? Math.round(metrics[i].text.unit * 10) / 10 : null,
+            lh:    Math.round(metrics[i].lh * 10) / 10,
+            splittable: SPLITTABLE.has(f.block.type) && Boolean(f.block.text),
+          })),
+        };
+      }
+      onPages(list);
+      setDone(true);
+    };
+
+    // En página única no hay izquierda ni derecha: no se rellena nada
+    if (layout !== 'spread') {
+      finish(pages);
+      return;
+    }
+
+    // ── Cada sección, a un número par de páginas ─────────────────────
     // Así toda sección empieza siempre en página izquierda y el folio
     // conserva su paridad: pares a la izquierda, impares a la derecha.
     const even = [];
@@ -269,31 +313,8 @@ export default function Paginator({ sections, codexWidth, codexHeight, signal, o
       }
     }
 
-    // En desarrollo se deja a mano el reparto, para poder auditar por
-    // qué una página ha quedado como ha quedado.
-    if (import.meta.env.DEV) {
-      window.__pagination = {
-        boxHeight,
-        pages: even.map((p, k) => ({
-          folio: k + 2, letter: p.section, tone: p.tone, blank: p.blank,
-          used: p.used, anchor: p.anchor,
-          blocks: p.blocks.map((b) => b.type),
-        })),
-        blocks: flat.map((f, i) => ({
-          i, letter: f.li, type: f.block.type,
-          ink: Math.round(metrics[i].ink),
-          gap: Math.round(gapBefore(i, i - 1)),
-          lines: metrics[i].text ? metrics[i].text.count : null,
-          unit:  metrics[i].text ? Math.round(metrics[i].text.unit * 10) / 10 : null,
-          lh:    Math.round(metrics[i].lh * 10) / 10,
-          splittable: SPLITTABLE.has(f.block.type) && Boolean(f.block.text),
-        })),
-      };
-    }
-
-    onPages(even);
-    setDone(true);
-  }, [flat.length, boxHeight, boxWidth, onPages]);
+    finish(even);
+  }, [flat.length, boxHeight, boxWidth, layout, onPages]);
 
   /** Lee de la página patrón el ancho y el alto útiles de la caja */
   const readRuler = useCallback(() => {
@@ -326,7 +347,7 @@ export default function Paginator({ sections, codexWidth, codexHeight, signal, o
     }));
     return () => cancelAnimationFrame(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [signal, codexWidth, codexHeight, boxHeight, boxWidth, sections]);
+  }, [signal, codexWidth, codexHeight, layout, boxHeight, boxWidth, sections]);
 
   if (done) return null;
 
@@ -339,7 +360,7 @@ export default function Paginator({ sections, codexWidth, codexHeight, signal, o
         className="pg-ruler"
         style={{ width: `${codexWidth || 1080}px`, height: `${codexHeight || 870}px` }}
       >
-        <div className="pg pg-l">
+        <div className={`pg ${layout === 'spread' ? 'pg-l' : 'pg-solo'}`}>
           <div className="pg-band pg-band--head" />
           <div className="pg-box"><div className="pg-ruler-probe" /></div>
           <div className="pg-band pg-band--foot" />
@@ -377,32 +398,98 @@ function splitFullNote(el, block, boxHeight) {
   const paras = (block.blocks || []).filter((b) => b.type === 'note-paragraph');
   const rest  = (block.blocks || []).filter((b) => b.type !== 'note-paragraph');
 
-  if (!cols || paras.length < 2 || el.offsetHeight <= boxHeight) return [block];
+  if (!cols || !paras.length || el.offsetHeight <= boxHeight) return [block];
 
   const kids = Array.from(cols.children);
   if (kids.length !== paras.length) return [block];
 
-  const headFirst = cols.offsetTop;                 // etiqueta + imagen + título
-  const headCont  = Math.min(headFirst, 44);        // solo la etiqueta
+  // Alto de la cabecera (etiqueta + imagen + título): desde el principio
+  // de la nota, no desde el de la caja de medición, donde la nota está
+  // en algún punto de una larga columna con todo el libro
+  const headOf = () => cols.getBoundingClientRect().top - el.getBoundingClientRect().top;
+  const headFirst = headOf();
+
+  // Cabecera de las páginas de continuación: sin imagen y con el título
+  // en pequeño. Se mide poniendo la nota en ese estado un momento.
+  const figs = Array.from(el.querySelectorAll('.fnp-fig'));
+  const tag  = el.querySelector('.fnp-tag');
+  const tagText = tag?.textContent;
+  el.classList.add('fnp--cont');
+  figs.forEach((f) => { f.style.display = 'none'; });
+  if (tag) tag.textContent = 'Nota · continúa';
+  const headCont = headOf();
+  el.classList.remove('fnp--cont');
+  figs.forEach((f) => { f.style.display = ''; });
+  if (tag) tag.textContent = tagText;
   const saved = { height: cols.style.height, width: cols.style.width };
+  const clones = [];                                // trozos creados para medir
 
   /** ¿Caben los párrafos [from, to) en dos columnas de `h` px? */
-  const fits = (from, to, h) => {
+  const fits = (from, to, h, extra) => {
     kids.forEach((k, j) => { k.style.display = (j >= from && j < to) ? '' : 'none'; });
+    if (extra) extra.style.display = '';
     cols.style.height = `${Math.max(60, h)}px`;
     return cols.scrollWidth <= cols.clientWidth + 1;
+  };
+
+  /**
+   * Del párrafo `j` se busca la mayor parte que cabe, junto a los
+   * párrafos [from, j) que ya van en la página, cortando en un espacio.
+   * Si lo parte, el párrafo j pasa a ser la cabeza y la cola va detrás.
+   * `minChars` evita cabezas de dos palabras al rellenar un hueco.
+   */
+  const splitPara = (j, h, from, minChars = 0) => {
+    const node = kids[j];
+    const text = paras[j].text || '';
+    const len  = node.textContent.length;
+    // la cola deja al menos un par de líneas: nada de una página entera
+    // para un resto de cuatro palabras
+    let lo = 1, hi = len - NOTE_MIN_TAIL, best = null;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      const cut = splitAtVisible(text, mid);
+      if (!cut) { hi = mid - 1; continue; }
+      const head = sliceElement(node, 0, cut.headLen, cols);
+      node.style.display = 'none';
+      const ok = fits(from, j, h, head);
+      head.remove();
+      if (ok) { best = cut; lo = mid + 1; } else hi = mid - 1;
+    }
+    if (!best || best.headLen < minChars) return false;
+    const headEl = sliceElement(node, 0, best.headLen, cols);
+    const tailEl = sliceElement(node, best.at, Infinity, cols);
+    cols.insertBefore(headEl, node);
+    cols.insertBefore(tailEl, node);
+    node.style.display = 'none';                   // el original queda fuera
+    clones.push(headEl, tailEl);
+    kids.splice(j, 1, headEl, tailEl);
+    paras.splice(j, 1, { ...paras[j], text: best.head }, { ...paras[j], text: best.tail });
+    return true;
   };
 
   const parts = [];
   let from = 0;
   let guard = 0;
 
-  while (from < paras.length && guard++ < paras.length + 4) {
+  // En pantallas muy bajas la cabecera de la nota (etiqueta, imagen, pie
+  // y título) casi llena la página: si no deja sitio para unas líneas,
+  // la primera página lleva solo la cabecera y el texto empieza después.
+  if (boxHeight - headFirst < NOTE_MIN_TEXT) {
+    parts.push({ ...block, blocks: rest, cont: false, runsOn: true });
+  }
+
+  while (from < paras.length && guard++ < 200) {
     const avail = boxHeight - (parts.length === 0 ? headFirst : headCont);
+
+    // Si ni el primer párrafo cabe solo, se parte por donde quepa
+    if (!fits(from, from + 1, avail)) splitPara(from, avail, from);
 
     // cuántos párrafos entran a partir de `from`
     let to = from + 1;
     while (to < paras.length && fits(from, to + 1, avail)) to++;
+
+    // Si queda hueco, el párrafo siguiente aporta lo que quepa de él
+    if (to < paras.length && splitPara(to, avail, from, 80) && fits(from, to + 1, avail)) to++;
 
     parts.push({
       ...block,
@@ -415,7 +502,8 @@ function splitFullNote(el, block, boxHeight) {
   }
 
   // dejar la caja de medición como estaba
-  kids.forEach((k) => { k.style.display = ''; });
+  clones.forEach((c) => c.remove());
+  Array.from(cols.children).forEach((k) => { k.style.display = ''; });
   cols.style.height = saved.height;
   cols.style.width  = saved.width;
 

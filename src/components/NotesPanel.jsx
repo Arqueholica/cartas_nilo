@@ -12,6 +12,10 @@ import NoteBody from './book/blocks/NoteBody';
  * sitio: la nota remitida aparece justo debajo, sangrada y con tinte
  * propio, sin sacar al lector de donde está.
  *
+ * En pantallas en vertical el panel se presenta como una hoja que sube
+ * desde abajo (lo decide el CSS con data-layout y data-orientation): se
+ * cierra tocando fuera o deslizando su cabecera hacia abajo.
+ *
  * (Las notas del lector están desactivadas por ahora.)
  */
 export default function NotesPanel({ open, onClose, footnotes, spreadNotes,
@@ -35,6 +39,15 @@ export default function NotesPanel({ open, onClose, footnotes, spreadNotes,
   // Al cambiar de doble página, replegar las remisiones
   useEffect(() => { setOpenRefs({}); }, [spreadNotes]);
 
+  // En vertical el panel es una hoja inferior: deslizar su cabecera hacia
+  // abajo la cierra
+  const sheetY = useRef(null);
+  const onSheetStart = (e) => { sheetY.current = e.changedTouches[0].clientY; };
+  const onSheetEnd = (e) => {
+    if (sheetY.current !== null && e.changedTouches[0].clientY - sheetY.current > 50) onClose(false);
+    sheetY.current = null;
+  };
+
   const toggleRef = (key) =>
     setOpenRefs((prev) => ({ ...prev, [key]: !prev[key] }));
 
@@ -54,8 +67,11 @@ export default function NotesPanel({ open, onClose, footnotes, spreadNotes,
     <>
       <div className="ns-pull-tab" onClick={() => onClose(!open)}>Notas</div>
 
+      {/* Fondo de la hoja inferior (solo en vertical): tocarlo la cierra */}
+      <div className={`notes-backdrop${open ? ' open' : ''}`} onClick={() => onClose(false)} />
+
       <aside className={`notes-col${open ? ' open' : ''}`}>
-        <div className="nc-head">
+        <div className="nc-head" onTouchStart={onSheetStart} onTouchEnd={onSheetEnd}>
           <span className="nc-title">
             Notas al margen
             {cartaLabel && <small className="nc-sub"> · {cartaLabel}</small>}
