@@ -19,6 +19,7 @@ import {
 
 import { useBook }     from './hooks/useBook';
 import { useBookmark } from './hooks/useBookmark';
+import { useReaderPrefs } from './hooks/useReaderPrefs';
 
 import Header     from './components/Header';
 import Sidebar    from './components/Sidebar';
@@ -28,16 +29,29 @@ import Paginator  from './components/book/Paginator';
 
 import { normalizeTerm } from './components/book/blocks/parseText';
 import { pageChrome } from './components/book/pageChrome';
+import { spreadAnchor, spreadForAnchor, COVER } from './components/book/anchors';
 import { chrome }     from './data/books/flaubert-cartas/chrome';
 
 const BOOK_SLUG = 'flaubert-cartas';
+
+// El libro aún no trae sonidos (falta /audio/page-turn.mp3). Cuando
+// lleguen, basta con ponerlo a true: el interruptor de «Opciones de
+// lectura» se activa y el paso de página suena si el lector lo quiere.
+const SOUND_READY = false;
+
+/** Folio visible de una doble página (el de la izquierda, o el de la derecha) */
+const folioOf = (sp) => sp?.left?.folio || sp?.right?.folio || '';
 const FOCUS_MS  = 5000;   // cuánto dura el enfoque de una nota
 
 export default function App() {
   /* ── Medidas de la caja de texto ── */
   const [box, setBox]       = useState({ w: 0, h: 0 });
-  const [fontStep, setFont] = useState(0);
   const [pages, setPages]   = useState(null);
+
+  /* ── Opciones de lectura (tema, letra, marcador, animaciones…) ── */
+  const { prefs, set: setPref, stepFont } = useReaderPrefs();
+  const fontStep = prefs.fontStep;
+  const [optionsOpen, setOptionsOpen] = useState(false);
 
   // Solo se mide el libro abierto. De ahí saca el paginador la caja de
   // texto, montando una página patrón: así no hay que repetir en el
@@ -173,23 +187,46 @@ export default function App() {
     return set;
   }, []);
 
-  const { spread, flipping, flipDirection, goTo, next, prev } =
-    useBook(spreads.length);
+  const { spread, flipping, flipDirection, goTo, jumpTo, next, prev } =
+    useBook(spreads.length, { animate: prefs.animations, sound: prefs.sound && SOUND_READY });
 
-  const [theme,         setTheme]         = useState('sepia');
+  /* ── Mantener el sitio al repaginar ──
+     Al cambiar el tamaño de letra o de ventana el libro se repagina y la
+     doble página N ya no contiene lo mismo. Se recuerda el ANCLA de lo
+     que se está leyendo y, tras repaginar, se salta sin animación a la
+     doble página que la contiene. Mientras se recoloca no se actualiza
+     el ancla, para que cambios sucesivos no la vayan desplazando. */
+  const posRef     = useRef(COVER);
+  const restoring  = useRef(false);
+  useEffect(() => {
+    if (restoring.current) { restoring.current = false; return; }
+    posRef.current = spreadAnchor(spreads[spread]) || posRef.current;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spread]);
+  useEffect(() => {
+    const target = spreadForAnchor(spreads, posRef.current);
+    if (target !== spread) { restoring.current = true; jumpTo(target); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spreads]);
+
   const [navOpen,       setNavOpen]       = useState(false);
   const [notesOpen,     setNotesOpen]     = useState(false);
   const [highlightNote, setHighlightNote] = useState(null);
   const [activeTerm,    setActiveTerm]    = useState(null);
 
-  const returnToRef = useRef(0);
+  // Punto de lectura al que vuelve «Volver a la lectura» (como ancla)
+  const returnToRef = useRef(null);
   const [hasReturn, setHasReturn] = useState(false);
   const current = spreads[spread] || {};
 
   const { hasRibbonHere, toggleRibbon, ribbon, resume, dismissResume } =
-    useBookmark(BOOK_SLUG, spread, spreads.length);
-
-  useEffect(() => { document.body.dataset.theme = theme; }, [theme]);
+    useBookmark(BOOK_SLUG, {
+      mode:      prefs.bookmarkMode,
+      spreads,
+      spread,
+      ready:     Boolean(pages),
+      isReading: current.kind === 'letter',
+    });
 
   const toggleFS = useCallback(() => {
     if (!document.fullscreenElement)
@@ -209,36 +246,30 @@ export default function App() {
   const handleTermClick = useCallback((term) => {
     const target = termSpread[term] ?? glossaryStart;
     if (target === undefined) return;
-    returnToRef.current = spread;
+    returnToRef.current = spreadAnchor(spreads[spread]);
     setHasReturn(true);
     setActiveTerm(term);
     goTo(target);
     setTimeout(() => setActiveTerm(null), 3000);
-  }, [goTo, glossaryStart, termSpread, spread]);
+  }, [goTo, glossaryStart, termSpread, spread, spreads]);
 
   const handleReturn = useCallback(() => {
-    goTo(returnToRef.current || 0);
-  }, [goTo]);
+    goTo(spreadForAnchor(spreads, returnToRef.current));
+  }, [goTo, spreads]);
 
   const goToSection = useCallback((target) => {
-    if (spread < (galleryStart ?? Infinity)) {
-      returnToRef.current = spread;
-      setHasReturn(spread > 0);
+    if (current.kind === 'letter') {
+      returnToRef.current = spreadAnchor(spreads[spread]);
+      setHasReturn(true);
     }
     goTo(target);
-  }, [goTo, spread, galleryStart]);
+  }, [goTo, spread, spreads, current.kind]);
 
   useEffect(() => {
     setHighlightNote(null);
     setNotesOpen(false);
   }, [spread]);
 
-  const changeFont = (delta) => {
-    const root = document.documentElement;
-    const cur  = parseInt(getComputedStyle(root).fontSize);
-    root.style.fontSize = Math.min(22, Math.max(12, cur + delta)) + 'px';
-    setFont((n) => n + delta);
-  };
 
   const pageLabel =
     current.kind === 'cover'    ? 'Portada'
@@ -253,14 +284,18 @@ export default function App() {
         spread={spread}
         total={spreads.length}
         label={pageLabel}
-        theme={theme}
         onMenuOpen={() => setNavOpen(true)}
-        onFontUp={() => changeFont(1)}
-        onFontDown={() => changeFont(-1)}
-        onThemeChange={setTheme}
         onFullscreen={toggleFS}
+        bookmarkMode={prefs.bookmarkMode}
         onBookmark={toggleRibbon}
         bookmarked={hasRibbonHere}
+        optionsOpen={optionsOpen}
+        onOptionsToggle={() => setOptionsOpen((o) => !o)}
+        onOptionsClose={() => setOptionsOpen(false)}
+        prefs={prefs}
+        onSet={setPref}
+        onFont={stepFont}
+        soundReady={SOUND_READY}
         onReturn={(current.kind === 'gallery' || current.kind === 'glossary')
           && hasReturn ? handleReturn : null}
       />
@@ -299,14 +334,18 @@ export default function App() {
       </div>
 
       {/* Oferta de retomar la lectura */}
-      {resume !== null && resume !== spread && (
-        <div className="resume-bar">
-          <span>Dejaste la lectura en la página {resume + 1}.</span>
+      {resume !== null && (
+        <div className="resume-bar" role="status">
+          <span className="resume-ribbon" aria-hidden="true" />
+          <span>
+            Tu marcador está en la página {folioOf(spreads[resume])}
+            {spreads[resume]?.carta ? ` · Carta ${spreads[resume].carta}` : ''}.
+          </span>
           <button className="btn" onClick={() => { goTo(resume); dismissResume(); }}>
             Continuar
           </button>
           <button className="btn btn-ghost" onClick={dismissResume}>
-            Empezar de nuevo
+            Empezar desde el principio
           </button>
         </div>
       )}

@@ -31,13 +31,6 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .btn:hover,.btn.on{background:var(--accent);color:var(--bg-page);border-color:var(--accent)}
 .btn svg{width:14px;height:14px;fill:currentColor;flex-shrink:0}
 .btn.icon-btn{padding:2px 7px}
-.fsz{display:flex;border:1px solid var(--border);border-radius:4px;overflow:hidden}
-.fsz .btn{border:none;border-radius:0;font-size:11px;padding:2px 7px}
-.fsz .btn+.btn{border-left:1px solid var(--border)}
-.dots{display:flex;gap:3px}
-.dot{width:17px;height:17px;border-radius:50%;border:2px solid var(--border);cursor:pointer;transition:all .2s;flex-shrink:0}
-.dot:hover,.dot.on{border-color:var(--accent);transform:scale(1.15)}
-.dot[data-t="sepia"]{background:#d4c5a9}.dot[data-t="light"]{background:#faf8f4}.dot[data-t="dark"]{background:#28221a}
 .sep{width:1px;height:18px;background:var(--border);margin:0 2px}
 .overlay-bg{position:fixed;inset:0;background:var(--bg-overlay);z-index:148;opacity:0;pointer-events:none;transition:opacity .35s}
 .overlay-bg.open{opacity:1;pointer-events:all}
@@ -133,16 +126,22 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .inl-arr{display:inline-block;width:5px;height:5px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);transition:transform .3s;flex-shrink:0;opacity:.7}
 .inl.open .inl-arr{transform:rotate(45deg)}
 .inl-body{max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.4,0,.2,1)}
-.inl.open .inl-body{max-height:950px}
+.inl.open .inl-body{max-height:calc(var(--box-h, 900px) + 2rem)}
 .inl-body .iw{cursor:pointer;position:relative;overflow:hidden}
-.inl-body .iw img{width:100%;display:block;transition:filter .5s}
+/* La imagen de la nota, entera y proporcional dentro de la caja: el
+   recuadro sangra 10 px a cada lado, así que la imagen recupera ese
+   margen para no salirse de la caja de texto. Su alto se limita al de
+   la caja menos la barra de la nota y el pie de foto. */
+.pg-box .inl-body .iw{padding:8px 10px 0}
+.inl-body .iw img{width:100%;height:auto;max-height:calc(var(--box-h, 70vh) - 7rem);
+  object-fit:contain;object-position:center;display:block;transition:filter .5s}
 [data-theme="dark"] .inl-body .iw img{filter:brightness(.85) contrast(1.05)}
 .inl-body .iw .zi{position:absolute;top:5px;right:5px;background:var(--bg-overlay);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;opacity:0;transition:opacity .3s}
 .inl-body .iw:hover .zi{opacity:1}
 .inl-body .cap{font-family:var(--font-ui);font-size:.68rem;color:var(--text-muted);padding:6px 12px;line-height:1.4;background:var(--bg-page-alt);border-top:1px solid var(--border)}
-.igal{display:flex;gap:3px;margin:4px 0}
-.igal img{flex:1;min-width:0;border-radius:2px;object-fit:cover;height:70px;cursor:pointer;transition:transform .2s}
-.igal img:hover{transform:scale(1.04);z-index:1}
+.igal{display:flex;gap:6px;margin:4px 0;padding:8px 10px 0;align-items:center;justify-content:center;flex-wrap:wrap}
+.inl-body .igal img{flex:0 1 auto;min-width:0;max-width:100%;width:auto;height:90px;object-fit:contain;cursor:pointer;transition:transform .2s}
+.inl-body .igal img:hover{transform:scale(1.04);z-index:1}
 .nota-completa{margin:.9em 0;border-radius:5px;border:1px solid var(--border);overflow:hidden}
 .nc-trigger{display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:var(--accent);color:var(--bg-page);border:none;cursor:pointer;font-family:var(--font-ui);font-size:.76rem;font-weight:600;text-align:left;transition:all .2s}
 .nc-trigger:hover{background:var(--accent-light)}
@@ -329,7 +328,7 @@ sup.fn:hover{color:var(--accent-light)}
 .gallery-title::after{content:'';display:block;width:60px;height:2px;background:var(--accent);opacity:.4;margin:10px auto 0}
 .gallery-grid{margin-top:22px;display:grid;grid-template-columns:1fr;gap:22px}
 .gallery-item{margin:0}
-.gallery-img-wrap{position:relative;overflow:hidden;border-radius:6px;cursor:zoom-in;border:1px solid var(--border)}
+.gallery-img-wrap{position:relative;overflow:hidden;cursor:zoom-in}
 .gallery-img-wrap img{width:100%;display:block;transition:transform .4s}
 .gallery-img-wrap:hover img{transform:scale(1.03)}
 .gallery-zoom{position:absolute;top:8px;right:8px;background:var(--bg-overlay);color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;opacity:0;transition:opacity .3s}
@@ -343,7 +342,7 @@ sup.fn:hover{color:var(--accent-light)}
 
 /* ── Bloque de imagen simple ── */
 .image-block{margin:.9em 0;cursor:zoom-in}
-.image-block img{width:100%;display:block;border-radius:5px;border:1px solid var(--border)}
+.image-block img{width:100%;height:auto;max-height:calc(var(--box-h, 70vh) - 4rem);object-fit:contain;object-position:center;display:block}
 .image-caption{font-family:var(--font-ui);font-size:.7rem;color:var(--text-muted);margin-top:6px;line-height:1.4}
 
 /* ── Portada enriquecida ── */
@@ -384,7 +383,7 @@ sup.fn:hover{color:var(--accent-light)}
 /* La imagen lleva su ancho y alto reales (imgDims): con `height:auto`
    el navegador conoce su proporción antes de descargarla, y el techo
    de altura la mantiene dentro de la página. */
-.pg-box > .gallery-item .gallery-img-wrap img{height:auto;max-height:230px;object-fit:cover}
+.pg-box > .gallery-item .gallery-img-wrap img{height:auto;max-height:280px;object-fit:contain;object-position:center}
 
 /* Láminas de la galería: las imágenes no se parten, así que el hueco
    que queda en una página se reparte arriba y abajo en vez de quedarse
@@ -449,6 +448,19 @@ sup.fn:hover{color:var(--accent-light)}
    de medición justo cuando aparece la barra, el texto rompe líneas de
    otra manera y la página desborda un poco más: un círculo vicioso. */
 .pg-box{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;position:relative;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:var(--border) transparent;scroll-behavior:smooth}
+/* ── Norma de las imágenes ─────────────────────────────────────────
+   Una imagen se ve siempre entera y proporcional, como en el visor
+   ampliado: se reduce lo necesario para caber en la caja, a lo ancho y
+   a lo alto, y nunca se estira ni se recorta.
+
+   Las imágenes llevan su ancho y alto reales como atributos (imgDims),
+   para que el paginador conozca su proporción antes de descargarlas.
+   Esos atributos actúan también como medida en píxeles si el CSS no
+   los anula: por eso aquí `height:auto` es obligatorio. Cada tipo de
+   imagen fija después su ancho, su techo de altura y `object-fit:
+   contain`, que encaja la imagen entera dentro de ese hueco. */
+.pg img{max-width:100%;height:auto}
+
 /* El último bloque de una página no arrastra su margen inferior: es
    espacio vacío que no se ve pero cuenta para el desbordamiento, y
    sacaría una barra de desplazamiento en una página que en realidad
@@ -471,6 +483,7 @@ sup.fn:hover{color:var(--accent-light)}
    y reproduce la estructura de una doble página, de modo que su `.pg-box`
    mide exactamente lo que medirá la caja de cualquier página real. */
 .pg-ruler{position:relative;display:flex}
+.pg-ruler-probe{position:absolute;inset:0;pointer-events:none}
 
 /* Caja de medición. Recibe por estilo en línea el ancho de CONTENIDO de
    la caja real, así que aquí se le quita el carril de la barra para que
@@ -564,8 +577,7 @@ sup.fn:hover{color:var(--accent-light)}
    página: una imagen vertical, a ancho completo, se saldría de la caja. */
 .fnp-fig{margin:0 0 12px;flex:0 1 auto;min-height:0}
 .fnp-fig img{width:100%;height:auto;max-height:min(40vh,320px);
-  object-fit:contain;object-position:center;display:block;border-radius:3px;
-  cursor:zoom-in;border:1px solid var(--note-rule)}
+  object-fit:contain;object-position:center;display:block;cursor:zoom-in}
 .fnp-cap{font-family:var(--font-ui);font-size:.63rem;line-height:1.45;
   color:var(--text-muted);margin-top:5px}
 .fnp-title{font-family:var(--font-display);font-size:1.45rem;font-weight:600;
@@ -600,3 +612,90 @@ sup.fn:hover{color:var(--accent-light)}
 .xref-note-head{display:block;font-family:var(--font-ui);font-size:.58rem;
   text-transform:uppercase;letter-spacing:.8px;color:var(--accent);margin-bottom:4px}
 .xref-note .mn-text{font-size:.72rem;color:var(--text-secondary);margin:0}
+
+/* ══════════════════════════════════════════════════════════════
+   OPCIONES DE LECTURA
+   Panel que se abre desde el botón «Aa» de la barra. Reúne tema,
+   tamaño de letra, modo del marcador, animaciones y sonido.
+   ══════════════════════════════════════════════════════════════ */
+.ro-anchor{position:relative}
+.ro-trigger{gap:0;padding:2px 9px;font-family:var(--font-display);letter-spacing:0;line-height:1}
+.ro-trigger-a{font-size:14px;font-weight:600}
+.ro-trigger-b{font-size:11px;font-weight:600}
+
+.ro-panel{position:absolute;top:calc(100% + 10px);right:0;z-index:260;width:300px;
+  background:var(--bg-page);color:var(--text-primary);
+  border:1px solid var(--border);border-radius:10px;padding:14px 16px 12px;
+  box-shadow:0 14px 40px var(--shadow-deep);font-family:var(--font-ui);
+  animation:roIn .18s ease both}
+@keyframes roIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.ro-panel::before{content:'';position:absolute;top:-6px;right:16px;width:10px;height:10px;
+  background:var(--bg-page);border-left:1px solid var(--border);border-top:1px solid var(--border);
+  transform:rotate(45deg)}
+.ro-title{font-size:.62rem;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;
+  color:var(--text-muted);margin-bottom:12px}
+
+.ro-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0}
+.ro-row--stack{flex-direction:column;align-items:stretch;gap:8px}
+.ro-row--soon{opacity:.55}
+.ro-label{font-size:.76rem;font-weight:600;color:var(--text-secondary);display:flex;flex-direction:column;gap:2px}
+.ro-label small{font-size:.66rem;font-weight:500;color:var(--text-muted)}
+.ro-sep{height:1px;background:var(--border);margin:6px 0}
+
+/* Tema: tres muestras con su nombre */
+.ro-themes{display:flex;gap:6px}
+.ro-theme{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 4px 2px;
+  background:none;border:1px solid transparent;border-radius:6px;cursor:pointer;
+  font-family:var(--font-ui);font-size:.62rem;color:var(--text-muted);transition:all .2s}
+.ro-theme:hover{color:var(--text-secondary)}
+.ro-theme.on{border-color:var(--accent);color:var(--accent)}
+.ro-swatch{width:30px;height:20px;border-radius:4px;border:1px solid var(--border)}
+.ro-swatch[data-t="sepia"]{background:#e8dcc4}
+.ro-swatch[data-t="light"]{background:#faf8f4}
+.ro-swatch[data-t="dark"]{background:#28221a}
+
+/* Tamaño de letra: A− · marcas · A+ */
+.ro-font{display:flex;align-items:center;gap:8px}
+.ro-font-btn{width:28px;height:26px;display:flex;align-items:center;justify-content:center;
+  background:none;border:1px solid var(--border);border-radius:5px;cursor:pointer;
+  font-family:var(--font-display);font-size:.78rem;font-weight:600;color:var(--text-secondary);
+  transition:all .2s}
+.ro-font-btn--big{font-size:1rem}
+.ro-font-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.ro-font-btn:disabled{opacity:.35;cursor:default}
+.ro-ticks{display:flex;align-items:flex-end;gap:3px;height:14px}
+.ro-tick{width:4px;height:6px;border-radius:1px;background:var(--border);transition:background .2s}
+.ro-tick.base{height:10px}
+.ro-tick.on{background:var(--accent)}
+
+/* Marcador: control segmentado y una línea que explica el modo */
+.ro-seg{display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.ro-seg-btn{flex:1;padding:6px 8px;background:none;border:none;cursor:pointer;
+  font-family:var(--font-ui);font-size:.72rem;font-weight:600;color:var(--text-secondary);
+  transition:all .2s}
+.ro-seg-btn+.ro-seg-btn{border-left:1px solid var(--border)}
+.ro-seg-btn.on{background:var(--accent);color:var(--bg-page)}
+.ro-hint{margin:0;font-size:.68rem;line-height:1.45;color:var(--text-muted)}
+
+/* Interruptor */
+.ro-switch{position:relative;width:34px;height:19px;flex-shrink:0;padding:0;
+  border-radius:10px;border:1px solid var(--border);background:var(--bg-page-alt);
+  cursor:pointer;transition:background .2s,border-color .2s}
+.ro-switch-knob{position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;
+  background:var(--text-muted);transition:transform .2s,background .2s}
+.ro-switch.on{background:var(--accent);border-color:var(--accent)}
+.ro-switch.on .ro-switch-knob{transform:translateX(15px);background:var(--bg-page)}
+.ro-switch:disabled{cursor:default}
+
+/* Botón del marcador en modo automático: lleva una «A» */
+.bm-btn{position:relative}
+.bm-auto{position:absolute;right:1px;bottom:0;font-size:8px;font-weight:800;line-height:1;
+  color:var(--accent);background:var(--bg-controls);border-radius:2px;padding:0 1px}
+.bm-btn:hover .bm-auto{color:var(--bg-page);background:var(--accent)}
+
+/* Oferta de continuar: con su cinta, para que se reconozca */
+.resume-ribbon{width:8px;height:18px;flex-shrink:0;background:var(--accent);
+  clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%)}
+
+@media(max-width:600px){.ro-panel{position:fixed;top:calc(var(--bar-h) + 6px);left:8px;right:8px;width:auto}
+  .ro-panel::before{display:none}}

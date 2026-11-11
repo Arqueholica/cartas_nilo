@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState, useCallback } from 'react';
 import BlockRenderer from './blocks/BlockRenderer';
-import { measureLines, splitAtVisible, visibleLength } from './splitText';
+import { measureLines, splitAtVisible, sliceElement } from './splitText';
 
 /**
  * Paginator — reparte el contenido en páginas midiendo lo que cabe.
@@ -41,6 +41,13 @@ import { measureLines, splitAtVisible, visibleLength } from './splitText';
  *   codexHeight alto del libro, en px
  *   signal    valor que, al cambiar, fuerza una nueva medición
  *   onPages   callback con las páginas calculadas
+ *
+ * Cada página lleva `anchor`: [bloque, carácter] del contenido con que
+ * empieza (el índice del bloque en la lista plana de todo el libro y,
+ * si es un párrafo partido, el carácter visible en que arranca el
+ * trozo). Las anclas no cambian al repaginar, así que sirven para
+ * reencontrar un punto del libro —la página que se está leyendo, la
+ * cinta del marcador— aunque cambien el tamaño de letra o la ventana.
  */
 
 /** Bloques cuyo texto puede repartirse entre páginas */
@@ -118,6 +125,7 @@ export default function Paginator({ sections, codexWidth, codexHeight, signal, o
       return cur;
     };
     const avail = () => boxHeight - SAFETY - used;
+    const scratch = [];   // copias de párrafos creadas para medir trozos
 
     flat.forEach((item, i) => {
       const { block } = item;
@@ -126,9 +134,10 @@ export default function Paginator({ sections, codexWidth, codexHeight, signal, o
       // La nota completa ocupa su propia página. Si no cabe en una,
       // sigue en la siguiente, también con el tinte de nota.
       if (block.type === 'full-note') {
-        for (const part of splitFullNote(els[i], block, boxHeight - SAFETY)) {
+        splitFullNote(els[i], block, boxHeight - SAFETY).forEach((part, k) => {
           open(item.li, 'note').blocks.push(part);
-        }
+          cur.anchor = [i, k];
+        });
         cur = null;                    // lo siguiente abre página nueva
         return;
       }
@@ -150,47 +159,59 @@ export default function Paginator({ sections, codexWidth, codexHeight, signal, o
       if (!m.text) {
         const lead = gapBefore(i, prev);
         if (lead + m.ink > avail() && prev >= 0) open(item.li);
+        if (!cur.anchor) cur.anchor = [i, 0];
         cur.blocks.push(block);
         used += gapBefore(i, prev) + m.ink;
+        cur.used = used;
         prev = i;
         return;
       }
 
       // ── Bloque de texto: repartir por líneas ──
-      const t = m.text;
-      const total = t.count;
-      let startLine = 0;         // primera línea del trozo que falta colocar
-      let source = block.text;   // fuente del trozo que falta colocar
+      // Se trabaja sobre el párrafo ya compuesto en la caja oculta. En
+      // cada página se elige el corte con su retícula de líneas y después
+      // se MIDEN los dos trozos de verdad, recortando una copia del
+      // párrafo: la cabeza, para saber cuánto ocupa exactamente, y la
+      // cola, porque al empezar en otra línea puede recomponerse algo
+      // distinto y es la que se seguirá repartiendo.
+      let node = els[i];         // el párrafo, o lo que falta de él
+      let t = m.text;            // su medición por líneas
+      let source = block.text;   // fuente de lo que falta colocar
       let consumed = 0;          // caracteres visibles ya colocados
       let first = true;
+      let guard = 0;             // tope de seguridad
 
-      // Tope de seguridad: nunca más vueltas que líneas tiene el bloque
-      let guard = 0;
-
-      while (guard++ < total + 8) {
-        // Lo que se interpone antes del trozo: la separación real con
-        // el bloque anterior, o nada si el trozo abre página porque
-        // viene partido de la anterior.
+      while (guard++ < 200) {
+        // Lo que se interpone antes del trozo: la separación real con el
+        // bloque anterior, o nada si abre página viniendo de la anterior
         const lead = first ? gapBefore(i, prev) : 0;
 
-        // Alto de un trozo = líneas enteras. Medirlo por la caja del
-        // texto se quedaría corto por el interlineado.
-        const heightTo = (L) => lead + (L - startLine + 1) * t.unit;
-
-        // última línea que entra en el hueco disponible
-        let end = startLine - 1;
-        for (let L = startLine; L < total; L++) {
-          if (heightTo(L) <= avail()) end = L; else break;
-        }
-
-        const place = (text, last, L) => {
+        const place = (text, last, h) => {
+          if (!cur.anchor) cur.anchor = [i, consumed];
           cur.blocks.push(chunk(block, text, first, last));
-          used += heightTo(L);
+          used += lead + h;
+          cur.used = used;
           prev = i;
         };
 
-        // ¿cabe lo que queda, entero?
-        if (end >= total - 1) { place(source, true, total - 1); break; }
+        // ¿Cabe lo que queda, entero?
+        const whole = node.offsetHeight;
+        if (lead + whole <= avail()) { place(source, true, whole); break; }
+
+        // Una sola línea, o líneas que no se han podido localizar: no se
+        // parte. Baja a la página siguiente, salvo que ya abra página.
+        if (!t) {
+          if (prev >= 0) { open(item.li); continue; }
+          place(source, true, whole);
+          break;
+        }
+
+        // Última línea que entra en el hueco disponible
+        const total = t.count;
+        let end = -1;
+        for (let L = 0; L < total; L++) {
+          if (lead + (L + 1) * t.unit <= avail()) end = L; else break;
+        }
 
         // Ni huérfanas ni viudas. Primero se intenta adelantar el corte
         // para que queden al menos dos líneas en la página siguiente:
@@ -199,26 +220,38 @@ export default function Paginator({ sections, codexWidth, codexHeight, signal, o
         if (total - 1 - end < MIN_LINES) end = total - 1 - MIN_LINES;
 
         // Si así no quedan dos líneas aquí, entonces sí baja entero
-        if (end - startLine + 1 < MIN_LINES) {
+        if (end + 1 < MIN_LINES) {
           if (prev >= 0) { open(item.li); continue; }
           // En página vacía nunca se baja nada: el párrafo es más alto
           // que la caja y se corta por donde se pueda
-          end = Math.min(startLine + MIN_LINES - 1, total - 2);
+          end = Math.min(MIN_LINES - 1, total - 2);
         }
 
-        const cut = splitAtVisible(source, t.starts[end + 1] - consumed);
-        if (!cut) { place(source, true, total - 1); break; }
+        const cut = splitAtVisible(source, t.starts[end + 1]);
+        if (!cut) { place(source, true, whole); break; }
 
-        const [head, tail] = cut;
-        place(head, false, end);
+        // Medir los dos trozos de verdad
+        const headEl = sliceElement(node, 0, cut.headLen, host);
+        headEl.classList.add('bt--runs-on');
+        const headH = headEl.offsetHeight;
+        const tailEl = sliceElement(node, cut.at, Infinity, host);
+        tailEl.classList.remove('dc');
+        tailEl.classList.add('bt--cont');
+        scratch.push(headEl, tailEl);
 
-        consumed += visibleLength(head) + 1;   // +1 por el espacio del corte
-        source = tail;
-        startLine = end + 1;
+        place(cut.head, false, headH);
+
+        consumed += cut.at;            // la cola empieza aquí
+        source = cut.tail;
+        node = tailEl;
+        t = measureLines(tailEl);
         first = false;
         open(item.li);
       }
     });
+
+    // Retirar las copias de medición
+    scratch.forEach((el) => el.remove());
 
     // ── Cada sección, a un número par de páginas ─────────────────────────────────────────────
     // Así toda sección empieza siempre en página izquierda y el folio
@@ -231,7 +264,7 @@ export default function Paginator({ sections, codexWidth, codexHeight, signal, o
       const lastOfSection = !pages[i + 1] || pages[i + 1].section !== pages[i].section;
       if (lastOfSection) {
         if (count % 2 === 1)
-          even.push({ section: pages[i].section, blocks: [], blank: true });
+          even.push({ section: pages[i].section, blocks: [], blank: true, anchor: pages[i].anchor });
         count = 0;
       }
     }
@@ -243,6 +276,7 @@ export default function Paginator({ sections, codexWidth, codexHeight, signal, o
         boxHeight,
         pages: even.map((p, k) => ({
           folio: k + 2, letter: p.section, tone: p.tone, blank: p.blank,
+          used: p.used, anchor: p.anchor,
           blocks: p.blocks.map((b) => b.type),
         })),
         blocks: flat.map((f, i) => ({
@@ -263,12 +297,24 @@ export default function Paginator({ sections, codexWidth, codexHeight, signal, o
 
   /** Lee de la página patrón el ancho y el alto útiles de la caja */
   const readRuler = useCallback(() => {
-    const el = ruler.current?.querySelector('.pg-box');
-    if (!el) return;
-    const w = el.clientWidth;
-    const h = el.clientHeight;
+    // Medida EXACTA, con decimales: clientWidth y clientHeight redondean a
+    // píxeles enteros, y medio píxel de más en la caja de medición basta
+    // para que una línea quepa allí y no en la página real. Una sonda
+    // posicionada en absoluto ocupa justo el hueco útil de la caja (sin
+    // el carril de la barra) y da su tamaño con decimales.
+    const probe = ruler.current?.querySelector('.pg-ruler-probe');
+    if (!probe) return;
+    const r = probe.getBoundingClientRect();
+    const w = r.width;
+    const h = r.height;
     if (!w || !h) return;
-    setBox((b) => (Math.abs(b.w - w) > 1 || Math.abs(b.h - h) > 1 ? { w, h } : b));
+    // La caja útil queda a disposición del CSS (--box-w, --box-h): así
+    // una imagen puede limitarse al alto de la página sin repetir sus
+    // medidas en el código.
+    const root = document.documentElement.style;
+    root.setProperty('--box-w', `${w}px`);
+    root.setProperty('--box-h', `${h}px`);
+    setBox((b) => (Math.abs(b.w - w) > 0.01 || Math.abs(b.h - h) > 0.01 ? { w, h } : b));
   }, []);
 
   useLayoutEffect(() => {
@@ -295,7 +341,7 @@ export default function Paginator({ sections, codexWidth, codexHeight, signal, o
       >
         <div className="pg pg-l">
           <div className="pg-band pg-band--head" />
-          <div className="pg-box" />
+          <div className="pg-box"><div className="pg-ruler-probe" /></div>
           <div className="pg-band pg-band--foot" />
         </div>
       </div>

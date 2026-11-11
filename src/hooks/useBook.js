@@ -2,23 +2,32 @@
  * useBook — gestión de navegación del libro
  * Encapsula: spread actual, flip, teclado, swipe táctil
  * Diseñado para ser agnóstico del contenido.
+ *
+ * Opciones (las fija el lector en «Opciones de lectura»):
+ *   animate  pasar página con animación (si no, el cambio es inmediato)
+ *   sound    sonido al pasar página (requiere /audio/page-turn.mp3)
+ *
+ * `jumpTo` cambia de doble página sin animación ni sonido: lo usa el
+ * lector para recolocarse cuando el libro se repagina (al cambiar el
+ * tamaño de letra o de ventana), sin que parezca que se ha pasado página.
  */
 import { useState, useCallback, useEffect, useRef } from 'react';
 
-export function useBook(totalSpreads) {
+export function useBook(totalSpreads, { animate = true, sound = false } = {}) {
   const [spread, setSpread]           = useState(0);
   const [flipping, setFlipping]       = useState(false);
   const [flipDirection, setFlipDir]   = useState(null);
   const flipAudio                     = useRef(null);
 
-  // Precargar sonido de pasar página
+  // Precargar sonido de pasar página (solo si el lector lo quiere)
   useEffect(() => {
+    if (!sound) return undefined;
     const audio = new Audio('/audio/page-turn.mp3');
     audio.preload = 'auto';
     audio.volume  = 0.15;
     flipAudio.current = audio;
     return () => { audio.pause(); flipAudio.current = null; };
-  }, []);
+  }, [sound]);
 
   const playFlip = useCallback(() => {
     const audio = flipAudio.current;
@@ -30,15 +39,21 @@ export function useBook(totalSpreads) {
 
   const goTo = useCallback((idx) => {
     if (flipping || idx === spread || idx < 0 || idx >= totalSpreads) return;
+    if (sound) playFlip();
+    if (!animate) { setSpread(idx); return; }
     setFlipping(true);
     setFlipDir(idx > spread ? 'forward' : 'backward');
-    playFlip();
     setTimeout(() => {
       setSpread(idx);
       setFlipping(false);
       setFlipDir(null);
     }, 900);
-  }, [spread, flipping, totalSpreads, playFlip]);
+  }, [spread, flipping, totalSpreads, playFlip, animate, sound]);
+
+  const jumpTo = useCallback((idx) => {
+    if (idx < 0 || idx >= totalSpreads) return;
+    setSpread(idx);
+  }, [totalSpreads]);
 
   const next = useCallback(() => goTo(spread + 1), [goTo, spread]);
   const prev = useCallback(() => goTo(spread - 1), [goTo, spread]);
@@ -72,5 +87,5 @@ export function useBook(totalSpreads) {
     };
   }, [next, prev]);
 
-  return { spread, flipping, flipDirection, goTo, next, prev };
+  return { spread, flipping, flipDirection, goTo, jumpTo, next, prev };
 }

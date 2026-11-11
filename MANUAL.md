@@ -302,18 +302,55 @@ ventana.
 a la página siguiente: se parte por la última línea que cabe y sigue
 arriba de la siguiente, de modo que cada página queda llena hasta el
 borde de la caja. El corte deja siempre un mínimo de dos líneas a cada
-lado —ni huérfanas ni viudas— y nunca cae dentro de una llamada de nota
-ni de un término de glosario. El trozo que continúa no lleva capitular
-y el que sigue en la página siguiente justifica también su última línea,
-para que la unión no se note.
+lado —ni huérfanas ni viudas— y nunca cae dentro de una llamada de nota.
+Si cae dentro de una cursiva o de un término de glosario de varias
+palabras, el marcado se cierra en una página y se reabre en la
+siguiente. El trozo que continúa no lleva capitular y el anterior
+justifica también su última línea, para que la unión no se note.
+
+El corte cae siempre en un espacio: si la línea siguiente empieza con
+media palabra («ca-ballo»), la palabra entera pasa a la página
+siguiente. Como eso puede recomponer el trozo que continúa, el
+paginador no supone su altura: recorta una copia del párrafo ya
+compuesto y la mide de verdad. Así la cuenta cuadra con cualquier
+tamaño de letra y de ventana.
+
+**Medidas con decimales.** La caja útil se lee con decimales, no en
+píxeles enteros: medio píxel de más en la caja de medición basta para
+que una línea quepa allí y no en la página real.
 
 Las páginas que acaban antes de tiempo son solo las que tienen motivo:
 el final de una carta y la que precede a una nota completa.
 
-**La única excepción** al límite de la caja son las ilustraciones con su
-nota integrada, que pueden sobresalir del ancho. Además, al desplegar
-una nota integrada la caja permite desplazarse para verla entera: en
-lectura normal no aparece barra alguna, porque el texto siempre cabe.
+### Imágenes
+
+**Norma:** una imagen se ve siempre entera y proporcional, como en el
+visor ampliado. Se reduce lo necesario para caber en la caja, a lo ancho
+y a lo alto, y nunca se estira ni se recorta.
+
+| Dónde | Ancho | Alto máximo |
+|---|---|---|
+| Nota integrada | el de la caja de texto | el de la caja menos la barra de la nota y el pie |
+| Bloque de imagen | el de la caja | el de la caja |
+| Nota completa | el de la caja | 320 px o el 40 % de la ventana |
+| Galería | el de la caja | 280 px |
+
+En CSS se resuelve con `width:100%`, `height:auto`, un techo de altura y
+`object-fit: contain`, que encaja la imagen entera en ese hueco. El alto
+de la caja está disponible para el CSS como `--box-h`: lo publica el
+paginador al medir la página patrón.
+
+`height:auto` es obligatorio en cualquier imagen nueva. Las imágenes
+llevan su ancho y alto reales como atributos (ver
+`scripts/image_sizes.py`), y si el CSS no fija `height:auto`, el
+navegador toma ese alto en píxeles y la imagen sale deformada. La regla
+general `.pg img{height:auto}` lo cubre por defecto.
+
+El recuadro de la nota integrada sobresale 10 px a cada lado de la caja
+para distinguirse del texto, pero la imagen, dentro de él, no pasa de
+los bordes de la caja. Al desplegar una nota integrada, la caja permite
+desplazarse para verla entera: en lectura normal no aparece barra
+alguna, porque el texto siempre cabe.
 
 ### Cabecera y pie
 
@@ -372,15 +409,61 @@ cualquier otra página**: lo que cambia es que van solas. Se declaran con `singl
 { single: true, kind: 'cover', page: coverPage }
 ```
 
+### Opciones de lectura
+
+El botón **Aa** de la barra superior abre el panel «Opciones de
+lectura» (`ReadingOptions.jsx`), que reúne:
+
+| Opción | Valores | Por defecto |
+|---|---|---|
+| Tema | Sepia · Claro · Oscuro | Sepia |
+| Tamaño de letra | 7 pasos, de −2 a +4 px sobre la base del diseño | la base |
+| Marcador | Automático · Manual | Automático |
+| Animaciones | sí / no | sí, salvo que el sistema pida reducir el movimiento |
+| Sonido | sí / no | no — sale como «Próximamente» |
+
+Las preferencias son de la persona, no del libro: valen para todos los
+títulos y se guardan en su navegador (`useReaderPrefs.js`). Cuando haya
+cuentas de usuario, ese hook es el único sitio que tendrá que leer y
+escribir en la nube.
+
+**Añadir una opción** es añadir una clave en `useReaderPrefs.js` y una
+fila en `ReadingOptions.jsx`.
+
+**Sonido.** El libro ya sabe reproducir un sonido al pasar página, pero
+el archivo nunca se llegó a incluir (`public/audio/page-turn.mp3`).
+Cuando llegue, basta con poner `SOUND_READY = true` en `App.jsx`: el
+interruptor se activa y el paso de página suena si el lector lo quiere.
+
 ### Marcador de lectura
 
-`useBookmark.js` guarda dos cosas por libro:
+Una cinta nace del lomo y cae entre las dos páginas, como la de un
+libro de verdad. Funciona de dos maneras, a elección del lector:
 
-- **automático** — la última página leída; al volver, el lector ofrece
-  retomarla
-- **manual** — una cinta que nace del lomo y cae entre las dos páginas,
-  como la de un libro de verdad. Se pone y se quita desde la barra
-  superior y lleva de vuelta a ese punto con un clic
+- **Automático** (por defecto): la cinta sigue la lectura y queda
+  siempre en la última página leída. El botón del marcador lleva una
+  «A» y, al pulsarlo, abre las opciones para poder cambiar de modo.
+- **Manual**: la cinta solo está donde el lector la pone, con el botón
+  del marcador de la barra.
+
+En los dos modos, al volver al libro se ofrece continuar desde la cinta
+(«Tu marcador está en la página 26 · Carta VI»). Las dos posiciones se
+guardan por separado: cambiar de modo no borra la cinta manual.
+
+La cinta sigue la **lectura**, no las consultas: visitar el glosario o
+la galería no la mueve. Desde allí, la cinta asoma entre las páginas y
+devuelve al texto con un clic.
+
+### Anclas: no perder el sitio al repaginar
+
+Al cambiar el tamaño de letra o de ventana el libro se repagina, y la
+doble página 12 ya no contiene lo mismo. Por eso los puntos que hay que
+recordar —dónde está leyendo el lector, la cinta, el punto al que vuelve
+«Volver a la lectura»— no se guardan como número de página sino como
+**ancla**: el contenido con que empieza esa página, `[bloque,
+carácter]` (`anchors.js`). Tras repaginar, el lector salta sin
+animación a la doble página que contiene su ancla, como hacen los
+lectores de libros electrónicos: conserva lo que abre la página.
 
 ### Remisiones entre notas
 
@@ -412,6 +495,10 @@ nota y la resalta mientras difumina las demás durante cinco segundos.
   numeración es propia: la del PDF no se arrastra.
 - **El texto manda sobre el bloque.** Antes que dejar un hueco al pie,
   el párrafo se parte, siempre con dos líneas como mínimo a cada lado.
+- **Las imágenes no se deforman ni se recortan nunca.** Se reducen lo
+  necesario para caber en la caja; la norma es la del visor ampliado.
+- **Las preferencias de lectura son de la persona**, no del libro, y el
+  marcador es automático salvo que el lector elija lo contrario.
 - **Glosario y galería van al final**, en el orden de las cartas, con
   una etiqueta que indica la procedencia de cada entrada. Se paginan
   midiendo, como todo el libro, y no llevan folio: en su pie va el
@@ -431,3 +518,9 @@ nota y la resalta mientras difumina las demás durante cinco segundos.
   notas están incompletas (3 de las 5 que cita el texto).
 - Un pie de foto del original trae un paréntesis sin cerrar
   —«Alexandre Bida (1823-1895.»—; se ha respetado tal cual.
+- **Pantallas estrechas (≤ 960 px).** El lector muestra una sola página,
+  pero el CSS oculta las páginas izquierdas en vez de repaginar a una
+  página por vista, así que en móvil y tableta vertical falta la mitad
+  del contenido. Hay que añadir un modo de página única al paginador.
+- **Sonido:** falta el archivo `public/audio/page-turn.mp3` (ver
+  «Opciones de lectura»).

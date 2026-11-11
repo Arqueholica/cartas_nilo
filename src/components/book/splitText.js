@@ -57,44 +57,91 @@ export function mapSource(source) {
   return { visible, map, guarded };
 }
 
-/** ¿La posición del fuente cae dentro de un marcador? */
-function inGuard(pos, guarded) {
-  return guarded.find(([a, b]) => pos > a && pos < b);
-}
-
 /**
- * Parte el texto fuente por el carácter visible `visibleCut`.
+ * Parte el texto fuente por la línea que empieza en `visibleCut`.
  *
- * Ajusta el corte al espacio anterior para no cortar una palabra y lo
- * retrasa hasta antes del marcador si cayera dentro de uno, de modo que
- * una llamada de nota nunca queda partida entre dos páginas.
+ * El corte cae siempre en un ESPACIO: el anterior a la palabra con que
+ * empieza esa línea. Si la línea empezaba con media palabra (división
+ * con guion, «ca-ballo»), la palabra entera pasa a la página siguiente.
+ * No se corta dentro de la palabra porque la posición que da el
+ * navegador en esos puntos no es fiable al carácter. Como el trozo que
+ * pasa a la página siguiente puede recomponerse algo distinto, el
+ * paginador lo mide de verdad (ver `sliceElement`) en vez de suponerlo.
  *
- * Devuelve [cabeza, cola] o null si no hay un punto de corte válido.
+ * Si el corte cae dentro de un marcador ([em:dos palabras]), el
+ * marcador se cierra en la cabeza y se vuelve a abrir en la cola, de
+ * modo que la cursiva o el término siguen en las dos páginas.
+ *
+ * Devuelve { head, tail, headLen, at } —`headLen`, caracteres visibles
+ * de la cabeza; `at`, carácter visible en que empieza la cola— o null
+ * si no hay un punto de corte válido.
  */
 export function splitAtVisible(source, visibleCut) {
   const { visible, map, guarded } = mapSource(source);
   if (visibleCut <= 0 || visibleCut >= visible.length) return null;
 
-  // retroceder hasta un espacio del texto visible
-  let v = Math.min(visibleCut, visible.length - 1);
-  while (v > 0 && visible[v] !== ' ') v--;
-  if (v <= 0) return null;
+  // Principio de la palabra con que empieza la línea…
+  let v = visibleCut;
+  while (v > 0 && visible[v - 1] !== ' ') v--;
+  // …y fin de la cabeza, sin los espacios del corte
+  let h = v;
+  while (h > 0 && visible[h - 1] === ' ') h--;
+  if (h <= 0 || v >= visible.length) return null;
 
-  let pos = map[v];
+  let headEnd   = map[h - 1] + 1;    // posición del fuente tras la cabeza
+  let tailStart = map[v];            // posición del fuente donde empieza la cola
+  let closeHead = '';
+  let openTail  = '';
 
-  // si el corte cae dentro de un marcador, llevarlo justo antes
-  let guard = inGuard(pos, guarded);
-  while (guard) {
-    pos = guard[0];
-    while (pos > 0 && source[pos] !== ' ') pos--;
-    if (pos <= 0) return null;
-    guard = inGuard(pos, guarded);
+  // La cabeza termina dentro de un marcador: cerrarlo (o incluir su
+  // corchete si lo que acaba es justo el contenido del marcador)
+  const gh = guarded.find(([a, b]) => headEnd > a && headEnd < b);
+  if (gh) {
+    if (headEnd === gh[1] - 1) headEnd = gh[1];
+    else closeHead = ']';
   }
 
-  const head = source.slice(0, pos).trimEnd();
-  const tail = source.slice(pos).trimStart();
+  // La cola empieza dentro de un marcador: abrirlo de nuevo (o tomarlo
+  // entero si empieza justo al principio de su contenido)
+  const gt = guarded.find(([a, b]) => tailStart > a && tailStart < b);
+  if (gt) {
+    const kind = source.slice(gt[0] + 1, source.indexOf(':', gt[0]));
+    if (tailStart === gt[0] + kind.length + 2) tailStart = gt[0];
+    else openTail = `[${kind}:`;
+  }
+
+  const head = (source.slice(0, headEnd) + closeHead).trimEnd();
+  const tail = (openTail + source.slice(tailStart)).trimStart();
   if (!head || !tail) return null;
-  return [head, tail];
+  return { head, tail, headLen: h, at: v };
+}
+
+/**
+ * Copia de un párrafo ya compuesto, recortada a los caracteres visibles
+ * [from, to). Se añade a `host` para poder medirla con las mismas reglas
+ * que el original. Con ella se mide el alto REAL de un trozo de párrafo,
+ * en vez de suponerlo a partir del párrafo entero.
+ */
+export function sliceElement(el, from, to, host) {
+  const c = el.cloneNode(true);
+  host.appendChild(c);
+  let nodes = textNodesOf(c);
+  const len = nodes.reduce((a, n) => a + n.nodeValue.length, 0);
+  const range = document.createRange();
+  if (to < len && c.lastChild) {
+    const at = locate(nodes, to);
+    range.setStart(at.node, at.pos);
+    range.setEndAfter(c.lastChild);
+    range.deleteContents();
+  }
+  if (from > 0 && c.firstChild) {
+    nodes = textNodesOf(c);
+    const at = locate(nodes, from);
+    range.setStartBefore(c.firstChild);
+    range.setEnd(at.node, at.pos);
+    range.deleteContents();
+  }
+  return c;
 }
 
 /** Longitud del texto visible de una cadena fuente */
